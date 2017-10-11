@@ -250,7 +250,7 @@ function courseplay:load(savegame)
 
 	self.cp.tooIsDirty = false
 	self.cp.orgRpm = nil;
-	
+
 	-- data basis for the Course list
 	self.cp.reloadCourseItems = true
 	self.cp.sorted = {item={}, info={}}	
@@ -860,7 +860,6 @@ function courseplay:drawWaypointsLines(vehicle)
 end;
 
 function courseplay:update(dt)
-
 	-- KEYBOARD EVENTS
 	if self:getIsActive() and self.isEntered and InputBinding.isPressed(InputBinding.COURSEPLAY_MODIFIER) then
 		if InputBinding.hasEvent(InputBinding.COURSEPLAY_START_STOP) then
@@ -1021,7 +1020,8 @@ function courseplay:update(dt)
 			end;
 		end;
 	end;
-
+	
+	--Not sure if this needs to be reenabled? During my test this produced a nil error
 	--[[if g_server ~= nil and g_currentMission.missionDynamicInfo.isMultiplayer then 
 		for k,v in pairs(courseplay.checkValues) do
 			self.cp[v .. "Memory"] = courseplay:checkForChangeAndBroadcast(self, "self.cp." .. v , self.cp[v], self.cp[v .. "Memory"]);
@@ -1069,6 +1069,7 @@ function courseplay:updateTick(dt)
 		self.cpTrafficCollisionIgnoreList = {}
 		courseplay:resetTools(self)
 	end
+
 	self.timer = self.timer + dt;
 end
 

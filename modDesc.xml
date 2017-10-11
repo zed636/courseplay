@@ -100,7 +100,7 @@ Courseplay is a modification for Farming Simulator 17. It allows you to have man
 ]]></sl>
 	</description>
 
-	<multiplayer supported="false" />
+	<multiplayer supported="true" />
 	<iconFilename>img/store.dds</iconFilename>
 	<l10n filenamePrefix="translations/translation" /> <!-- load translations from "translations/translation_<language>.xml file -->
 

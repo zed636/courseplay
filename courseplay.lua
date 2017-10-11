@@ -192,7 +192,7 @@ local function setGlobalData()
 	end;
 
 	--MULTIPLAYER
-	--[[
+	
 	courseplay.checkValues = {
 		"infoText",
 		"HUD0noCourseplayer",
@@ -211,7 +211,7 @@ local function setGlobalData()
 		"HUD4savedCombine",
 		"HUD4savedCombineName"
 		
-	};]]
+	};
 
 
 	--UTF8
