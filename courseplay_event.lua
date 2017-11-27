@@ -32,6 +32,8 @@ function CourseplayEvent:readStream(streamId, connection) -- wird aufgerufen wen
 		self.page = true
 	elseif self.page == 997 then
 		self.page = false
+	elseif self.page == 996 then
+		self.page = nil
 	end
 	self.type = streamReadString(streamId);
 	if self.type == "boolean" then
@@ -61,6 +63,8 @@ function CourseplayEvent:writeStream(streamId, connection)  -- Wird aufgrufen we
 		self.page = 998
 	elseif self.page == false then
 		self.page = 997
+	elseif self.page == nil then
+		self.page = 996
 	end
 	streamWriteInt32(streamId, self.page);
 	streamWriteString(streamId, self.type);

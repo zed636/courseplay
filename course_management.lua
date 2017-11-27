@@ -255,8 +255,9 @@ function courseplay:loadCourse(vehicle, id, useRealId, addCourseAtEnd) -- fn is 
 			courseplay:debug(string.format('%s: adding course done -> numWaypoints=%d, numCourses=%s, currentCourseName=%q', nameNum(vehicle), vehicle.cp.numWaypoints, vehicle.cp.numCourses, vehicle.cp.currentCourseName), 8);
 		end;
 
-		vehicle.cp.canDrive = true;
-
+		
+		vehicle:setCpVar('canDrive',true,courseplay.isClient);
+		
 		courseplay:setWaypointIndex(vehicle, 1);
 		courseplay:setModeState(vehicle, 0);
 		courseplay.signs:updateWaypointSigns(vehicle, "current");

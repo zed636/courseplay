@@ -319,7 +319,7 @@ end;
 
 function courseplay:setIsRecording(vehicle, isRecording)
 	if vehicle.cp.isRecording ~= isRecording then
-		vehicle.cp.isRecording = isRecording;
+		vehicle:setCpVar('isRecording',isRecording,courseplay.isClient);
 	end;
 end;
 

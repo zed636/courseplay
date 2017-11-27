@@ -914,7 +914,7 @@ function courseplay:update(dt)
 	end;
 
 	-- we are in record mode
-	if self.cp.isRecording then
+	if self.cp.isRecording and g_server ~= nil then
 		courseplay:record(self);
 	end;
 
@@ -1224,7 +1224,7 @@ function courseplay:readStream(streamId, connection)
 	self.cp.hasValidCourseGenerationData = streamDebugReadBool(streamId);
 	self.cp.headland.numLanes = streamDebugReadInt32(streamId)
 	self.cp.headland.turnType = streamDebugReadInt32(streamId)
-  self.cp.hasUnloadingRefillingCourse	 = streamDebugReadBool(streamId);
+    self.cp.hasUnloadingRefillingCourse	 = streamDebugReadBool(streamId);
 	courseplay:setInfoText(self, streamDebugReadString(streamId));
 	self.cp.returnToFirstPoint = streamDebugReadBool(streamId);
 	self.cp.ridgeMarkersAutomatic = streamDebugReadBool(streamId);
@@ -1326,89 +1326,92 @@ end
 function courseplay:writeStream(streamId, connection)
 	courseplay:debug("id: "..tostring(networkGetObjectId(self)).."  base: write stream", 5)
 	--print(tostring(self.name).."  base: write stream")
-	streamDebugWriteBool(streamId, self.cp.automaticCoverHandling)
-	streamDebugWriteBool(streamId, self.cp.automaticUnloadingOnField)
-	streamDebugWriteInt32(streamId,self.cp.mode)
-	streamDebugWriteFloat32(streamId,self.cp.turnDiameterAuto)
-	streamDebugWriteBool(streamId, self.cp.canDrive)
+	
+	streamDebugWriteBool(streamId, self.cp.automaticCoverHandling);
+	streamDebugWriteBool(streamId, self.cp.automaticUnloadingOnField);
+	streamDebugWriteInt32(streamId,self.cp.mode);
+	streamDebugWriteFloat32(streamId,self.cp.turnDiameterAuto);
+	streamDebugWriteBool(streamId, self.cp.canDrive);
 	streamDebugWriteBool(streamId, self.cp.combineOffsetAutoMode);
 	streamDebugWriteFloat32(streamId,self.cp.combineOffset)
-	streamDebugWriteString(streamId, self.cp.currentCourseName);
+	streamDebugWriteString(streamId,self.cp.currentCourseName);
 	streamDebugWriteBool(streamId, self.cp.driverPriorityUseFillLevel);
-	streamDebugWriteBool(streamId, self.cp.drivingDirReverse)
-	streamDebugWriteBool(streamId, self.cp.fieldEdge.customField.isCreated)
+	streamDebugWriteBool(streamId, self.cp.drivingDirReverse);
+	streamDebugWriteBool(streamId, self.cp.fieldEdge.customField.isCreated );
 	streamDebugWriteInt32(streamId,self.cp.fieldEdge.customField.fieldNum)
 	streamDebugWriteBool(streamId, self.cp.fieldEdge.customField.selectedFieldNumExists)
-	streamDebugWriteInt32(streamId, self.cp.fieldEdge.selectedField.fieldNum)
-	streamDebugWriteInt32(streamId, self.cp.globalInfoTextLevel);
-	streamDebugWriteBool(streamId, self.cp.hasBaleLoader)
-	streamDebugWriteBool(streamId, self.cp.hasStartingCorner);
-	streamDebugWriteBool(streamId, self.cp.hasStartingDirection);
-	streamDebugWriteBool(streamId, self.cp.hasValidCourseGenerationData);
-	streamDebugWriteInt32(streamId,self.cp.headland.numLanes);
-	streamDebugWriteInt32(streamId, self.cp.headland.turnType);
-	streamDebugWriteBool(streamId, self.cp.hasUnloadingRefillingCourse)
-	streamDebugWriteString(streamId, self.cp.infoText);
+	streamDebugWriteInt32(streamId,self.cp.fieldEdge.selectedField.fieldNum) 
+	streamDebugWriteInt32(streamId,self.cp.globalInfoTextLevel)
+	streamDebugWriteBool(streamId, self.cp.hasBaleLoader );
+	streamDebugWriteBool(streamId, self.cp.hasStartingCorner );
+	streamDebugWriteBool(streamId, self.cp.hasStartingDirection );
+	streamDebugWriteBool(streamId, self.cp.hasValidCourseGenerationData );
+	streamDebugWriteInt32(streamId,self.cp.headland.numLanes )
+	streamDebugWriteInt32(streamId,self.cp.headland.turnType )
+    streamDebugWriteBool(streamId, self.cp.hasUnloadingRefillingCourse	);
+	streamDebugWriteString(streamId,self.cp.infoText);
 	streamDebugWriteBool(streamId, self.cp.returnToFirstPoint);
 	streamDebugWriteBool(streamId, self.cp.ridgeMarkersAutomatic);
 	streamDebugWriteBool(streamId, self.cp.shovelStopAndGo);
-	streamDebugWriteInt32(streamId, self.cp.startAtPoint);
-	streamDebugWriteBool(streamId, self.cp.stopAtEnd)
+	streamDebugWriteInt32(streamId,self.cp.startAtPoint);
+	streamDebugWriteBool(streamId, self.cp.stopAtEnd);
 	streamDebugWriteBool(streamId, self:getIsCourseplayDriving());
-	streamDebugWriteBool(streamId,self.cp.hud.openWithMouse)
+	streamDebugWriteBool(streamId, self.cp.hud.openWithMouse)
 	streamDebugWriteBool(streamId, self.cp.realisticDriving);
 	streamDebugWriteFloat32(streamId,self.cp.driveOnAtFillLevel)
 	streamDebugWriteFloat32(streamId,self.cp.followAtFillLevel)
 	streamDebugWriteFloat32(streamId,self.cp.refillUntilPct)
 	streamDebugWriteFloat32(streamId,self.cp.tipperOffset)
-	streamDebugWriteBool(streamId, self.cp.tipperHasCover)
-	streamDebugWriteFloat32(streamId,self.cp.workWidth);
-	streamDebugWriteBool(streamId,self.cp.turnDiameterAutoMode)
+	streamDebugWriteBool(streamId, self.cp.tipperHasCover);
+	streamDebugWriteFloat32(streamId,self.cp.workWidth) 
+	streamDebugWriteBool(streamId, self.cp.turnDiameterAutoMode);
 	streamDebugWriteFloat32(streamId,self.cp.turnDiameter)
-	streamDebugWriteBool(streamId,self.cp.speeds.useRecordingSpeed)
-	streamDebugWriteFloat32(streamId,self.cp.coursePlayerNum);
+	streamDebugWriteBool(streamId, self.cp.speeds.useRecordingSpeed) 
+	streamDebugWriteFloat32(streamId,self.cp.coursePlayerNum)
 	streamDebugWriteFloat32(streamId,self.cp.laneOffset)
-	streamDebugWriteFloat32(streamId,self.cp.toolOffsetX)
+	streamDebugWriteFloat32(streamId,self.cp.toolOffsetX )
 	streamDebugWriteFloat32(streamId,self.cp.toolOffsetZ)
 	streamDebugWriteFloat32(streamId,self.cp.loadUnloadOffsetX)
 	streamDebugWriteFloat32(streamId,self.cp.loadUnloadOffsetZ)
-	streamDebugWriteInt32(streamId,self.cp.hud.currentPage)
-	streamDebugWriteBool(streamId,self.cp.HUD0noCourseplayer)
-	streamDebugWriteBool(streamId,self.cp.HUD0wantsCourseplayer)
-	streamDebugWriteString(streamId,self.cp.HUD0combineForcedSide)
-	streamDebugWriteBool(streamId,self.cp.HUD0isManual)
-	streamDebugWriteInt32(streamId,self.cp.HUD0turnStage)
-	streamDebugWriteBool(streamId,self.cp.HUD0tractorForcedToStop)
-	streamDebugWriteString(streamId,self.cp.HUD0tractorName)
-	streamDebugWriteBool(streamId,self.cp.HUD0tractor)
-	streamDebugWriteBool(streamId,self.cp.HUD1wait)
-	streamDebugWriteBool(streamId,self.cp.HUD1noWaitforFill)
-	streamDebugWriteBool(streamId,self.cp.HUD4hasActiveCombine)
-	streamDebugWriteString(streamId,self.cp.HUD4combineName)
-	streamDebugWriteBool(streamId,self.cp.HUD4savedCombine)
-	streamDebugWriteString(streamId,self.cp.HUD4savedCombineName)
-	streamDebugWriteInt32(streamId,self.cp.waypointIndex)
-	streamDebugWriteBool(streamId,self.cp.isRecording)
-	streamDebugWriteBool(streamId,self.cp.recordingIsPaused)
-	streamDebugWriteBool(streamId,self.cp.searchCombineAutomatically)
+	streamDebugWriteFloat32(streamId,self.cp.hud.currentPage);
+	streamDebugWriteBool(streamId, self.cp.HUD0noCourseplayer);
+	streamDebugWriteBool(streamId, self.cp.HUD0wantsCourseplayer);
+	streamDebugWriteString(streamId,self.cp.HUD0combineForcedSide);
+	streamDebugWriteBool(streamId, self.cp.HUD0isManual);
+	streamDebugWriteInt32(streamId,self.cp.HUD0turnStage);
+	streamDebugWriteBool(streamId, self.cp.HUD0tractorForcedToStop );
+	streamDebugWriteString(streamId,self.cp.HUD0tractorName );
+	streamDebugWriteBool(streamId, self.cp.HUD0tractor);
+	streamDebugWriteBool(streamId, self.cp.HUD1wait );
+	streamDebugWriteBool(streamId, self.cp.HUD1noWaitforFill );
+	streamDebugWriteBool(streamId, self.cp.HUD4hasActiveCombine);
+	streamDebugWriteString(streamId,self.cp.HUD4combineName );
+	streamDebugWriteBool(streamId, self.cp.HUD4savedCombine);
+	streamDebugWriteString(streamId,self.cp.HUD4savedCombineName);
+	streamDebugWriteInt32(streamId,self.cp.waypointIndex);
+	streamDebugWriteBool(streamId, self.cp.isRecording);
+	streamDebugWriteBool(streamId, self.cp.recordingIsPaused);
+	streamDebugWriteBool(streamId, self.cp.searchCombineAutomatically)
 	streamDebugWriteInt32(streamId,self.cp.searchCombineOnField)
 	streamDebugWriteFloat32(streamId,self.cp.speeds.turn)
 	streamDebugWriteFloat32(streamId,self.cp.speeds.field)
 	streamDebugWriteFloat32(streamId,self.cp.speeds.reverse)
 	streamDebugWriteFloat32(streamId,self.cp.speeds.street)
-	streamDebugWriteInt32(streamId,self.cp.visualWaypointsMode)
 	streamDebugWriteBool(streamId, self.cp.visualWaypointsStartEnd);
 	streamDebugWriteBool(streamId, self.cp.visualWaypointsAll);
 	streamDebugWriteBool(streamId, self.cp.visualWaypointsCrossing);
 	streamDebugWriteInt32(streamId,self.cp.warningLightsMode)
 	streamDebugWriteInt32(streamId,self.cp.waitTime)
+	streamDebugWriteBool(streamId, self.cp.symmetricLaneChange)
 	streamDebugWriteInt32(streamId,self.cp.startingCorner)
 	streamDebugWriteInt32(streamId,self.cp.startingDirection)
-	streamDebugWriteBool(streamId,self.cp.hasShovelStatePositions[2])
-	streamDebugWriteBool(streamId,self.cp.hasShovelStatePositions[3])
-	streamDebugWriteBool(streamId,self.cp.hasShovelStatePositions[4])
-	streamDebugWriteBool(streamId,self.cp.hasShovelStatePositions[5])
-
+	streamDebugWriteBool(streamId, self.cp.hasShovelStatePositions[2])
+	streamDebugWriteBool(streamId, self.cp.hasShovelStatePositions[3])
+	streamDebugWriteBool(streamId, self.cp.hasShovelStatePositions[4])
+	streamDebugWriteBool(streamId, self.cp.hasShovelStatePositions[5])
+	
+	
+	
 	local copyCourseFromDriverID;
 	if self.cp.copyCourseFromDriver ~= nil then
 		copyCourseFromDriverID = networkGetObjectId(self.cp.copyCourseFromDriver)
