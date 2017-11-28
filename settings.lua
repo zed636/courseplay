@@ -737,7 +737,7 @@ function courseplay:copyCourse(vehicle)
 		vehicle.cp.loadedCourses = src.cp.loadedCourses;
 		vehicle.cp.numCourses = src.cp.numCourses;
 		courseplay:setWaypointIndex(vehicle, 1);
-		vehicle.cp.numWaypoints = #(vehicle.Waypoints);
+		vehicle:setCpVar('numWaypoints', #vehicle.Waypoints,courseplay.isClient);
 		vehicle.cp.numWaitPoints = src.cp.numWaitPoints;
 		vehicle.cp.numCrossingPoints = src.cp.numCrossingPoints;
 
@@ -1103,30 +1103,32 @@ end;
 
 --Course generation
 function courseplay:switchStartingCorner(vehicle)
-	vehicle.cp.startingCorner = vehicle.cp.startingCorner + 1;
+	vehicle:setCpVar('startingCorner',vehicle.cp.startingCorner + 1,courseplay.isClient);
 	local maxNumber = 5
 	if vehicle.cp.generationPosition.hasSavedPosition then
 		maxNumber = 6
 	end
 	if vehicle.cp.startingCorner > maxNumber then
-		vehicle.cp.startingCorner = 1;
+		vehicle:setCpVar('startingCorner',1,courseplay.isClient);
 	end;
-	vehicle.cp.hasStartingCorner = true;
-  if vehicle.cp.startingCorner == 5 or
-		 vehicle.cp.startingCorner == 6 then
-    -- starting direction is always auto when starting corner is vehicle location
-    vehicle.cp.hasStartingDirection = true;
-    vehicle.cp.startingDirection = 5;
-		-- allow more headlands with the new course gen
-		vehicle.cp.headland.maxNumLanes = vehicle.cp.headland.autoDirMaxNumLanes
-    courseplay:changeStartingDirection( vehicle )
-    courseplay:changeHeadlandNumLanes(vehicle, 0)
-  else
-    vehicle.cp.hasStartingDirection = false;
-    vehicle.cp.startingDirection = 0;
-		vehicle.cp.headland.maxNumLanes = vehicle.cp.headland.manuDirMaxNumLanes
-    courseplay:changeHeadlandNumLanes(vehicle, 0)
-  end
+	vehicle:setCpVar('hasStartingCorner',true,courseplay.isClient);
+	if vehicle.cp.startingCorner == 5 
+	or vehicle.cp.startingCorner == 6 then
+		-- starting direction is always auto when starting corner is vehicle location
+		vehicle:setCpVar('hasStartingDirection',true,courseplay.isClient);
+		vehicle:setCpVar('startingDirection',5,courseplay.isClient);
+			-- allow more headlands with the new course gen
+		--vehicle.cp.headland.maxNumLanes = vehicle.cp.headland.autoDirMaxNumLanes
+		vehicle:setCpVar('headland.maxNumLanes',vehicle.cp.headland.autoDirMaxNumLanes,courseplay.isClient);
+		courseplay:changeStartingDirection( vehicle )
+		courseplay:changeHeadlandNumLanes(vehicle, 0)
+	else
+		vehicle:setCpVar('hasStartingDirection',false,courseplay.isClient);
+		vehicle:setCpVar('startingDirection',0,courseplay.isClient);
+		--vehicle.cp.headland.maxNumLanes = vehicle.cp.headland.manuDirMaxNumLanes
+		vehicle:setCpVar('headland.maxNumLanes',vehicle.cp.headland.manuDirMaxNumLanes,courseplay.isClient);
+		courseplay:changeHeadlandNumLanes(vehicle, 0)
+	end
 
 	courseplay:validateCourseGenerationData(vehicle);
 end;
@@ -1153,21 +1155,21 @@ function courseplay:changeStartingDirection(vehicle)
 					 vehicle.cp.startingCorner == 6 then -- Vehicle location
 			-- everything is auto generated, headland starts at vehicle location
 			validDirections[1] = 5; -- auto generated
-			vehicle.cp.startingDirection = 5
+			vehicle:setCpVar('startingDirection',5,courseplay.isClient);
 		end;
 
 		if vehicle.cp.startingDirection < 5 then
 			--would be easier with i=i+1, but more stored variables would be needed
 			if vehicle.cp.startingDirection == 0 then
-				vehicle.cp.startingDirection = validDirections[1];
+				vehicle:setCpVar('startingDirection',validDirections[1],courseplay.isClient);
 			elseif vehicle.cp.startingDirection == validDirections[1] then
-				vehicle.cp.startingDirection = validDirections[2];
+				vehicle:setCpVar('startingDirection',validDirections[2],courseplay.isClient);
 				clockwise = false
 			elseif vehicle.cp.startingDirection == validDirections[2] then
-				vehicle.cp.startingDirection = validDirections[1];
+				vehicle:setCpVar('startingDirection',validDirections[1],courseplay.isClient);
 			end;
 		end;
-		vehicle.cp.hasStartingDirection = true;
+		vehicle:setCpVar('hasStartingDirection',true,courseplay.isClient);
 	end;
 	if vehicle.cp.headland.userDirClockwise ~= clockwise then
 		courseplay:toggleHeadlandDirection(vehicle)
@@ -1180,7 +1182,10 @@ function courseplay:toggleReturnToFirstPoint(vehicle)
 end;
 
 function courseplay:changeHeadlandNumLanes(vehicle, changeBy)
-	vehicle.cp.headland.numLanes = Utils.clamp(vehicle.cp.headland.numLanes + changeBy, 0, vehicle.cp.headland.maxNumLanes);
+	--vehicle.cp.headland.numLanes = Utils.clamp(vehicle.cp.headland.numLanes + changeBy, 0, vehicle.cp.headland.maxNumLanes);
+	local numLanes = Utils.clamp(vehicle.cp.headland.numLanes + changeBy, 0, vehicle.cp.headland.maxNumLanes);
+	vehicle:setCpVar('headland.numLanes',numLanes,courseplay.isClient)
+	print("vehicle.cp.headland.numLanes after setCpVar: "..tostring(vehicle.cp.headland.numLanes))
 	courseplay:validateCourseGenerationData(vehicle);
 end;
 
@@ -1201,11 +1206,12 @@ end;
 
 function courseplay:changeHeadlandTurnType( vehicle )
   if vehicle.cp.headland.numLanes > 0 then 
-    vehicle.cp.headland.turnType = vehicle.cp.headland.turnType + 1
-    if vehicle.cp.headland.turnType > courseplay.HEADLAND_CORNER_TYPE_MAX then
-      vehicle.cp.headland.turnType = courseplay.HEADLAND_CORNER_TYPE_MIN
+    local newTurnType = vehicle.cp.headland.turnType + 1
+    if newTurnType > courseplay.HEADLAND_CORNER_TYPE_MAX then
+      newTurnType = courseplay.HEADLAND_CORNER_TYPE_MIN
     end
-  end
+	vehicle:setCpVar('headland.turnType',newTurnType,courseplay.isClient)
+	end
 end
 
 function courseplay:changeHeadlandReverseManeuverType( vehicle )
@@ -1216,12 +1222,13 @@ function courseplay:changeHeadlandReverseManeuverType( vehicle )
 end
 
 function courseplay:changeMultiTools(vehicle, changeBy, force)
+	local newMultiTools = 1
 	if force then
-		vehicle.cp.multiTools = force
+		newMultiTools = force
 	else
-		vehicle.cp.multiTools = Utils.clamp(vehicle.cp.multiTools + changeBy, 1, 8);
+		newMultiTools = Utils.clamp(vehicle.cp.multiTools + changeBy, 1, 8);
 	end
-	
+	vehicle:setCpVar('multiTools',newMultiTools,courseplay.isClient)
 	if vehicle.cp.multiTools%2 == 0 then
 		courseplay:changeLaneNumber(vehicle, 1)
 	else
@@ -1871,32 +1878,46 @@ end;
 ----------------------------------------------------------------------------------------------------
 
 function courseplay:setCpVar(varName, value, noEventSend)
-	if self.cp[varName] ~= value then
-		local oldValue = self.cp[varName];
-		self.cp[varName] = value;		
+	local split = Utils.splitString(".", varName);
+	if #split ==1 then
+		if self.cp[varName] ~= value then
+			local oldValue = self.cp[varName]; --TODO check wheter needed or not
+			self.cp[varName] = value;		
+			if CpManager.isMP and not noEventSend then
+				--print(courseplay.utils:getFnCallPath(2))
+				courseplay:debug(string.format("setCpVar: %s: %s -> send Event",varName,tostring(value)), 5);
+				CourseplayEvent.sendEvent(self, "self.cp."..varName, value)
+			end
+			if varName == "isDriving" then
+				courseplay:debug("reload page 1", 5);
+				courseplay.hud:setReloadPageOrder(self, 1, true);
+			elseif varName:sub(1, 3) == 'HUD' then
+				if Utils.startsWith(varName, 'HUD0') then
+					courseplay:debug("reload page 0", 5);
+					courseplay.hud:setReloadPageOrder(self, 0, true);
+				elseif Utils.startsWith(varName, 'HUD1') then
+					courseplay:debug("reload page 1", 5);
+					courseplay.hud:setReloadPageOrder(self, 1, true);
+				elseif Utils.startsWith(varName, 'HUD4') then
+					courseplay:debug("reload page 4", 5);
+					courseplay.hud:setReloadPageOrder(self, 4, true);
+				end;
+			elseif varName == 'waypointIndex' and self.cp.hud.currentPage == courseplay.hud.PAGE_CP_CONTROL and (self.cp.isRecording or self.cp.recordingIsPaused) and value and value == 4 then -- record pause action becomes available
+				courseplay.buttons:setActiveEnabled(self, 'recording');
+			end;
+		end;
+	elseif #split == 2 then
+		print("setDoubleCPVar: "..varName)
+		if self.cp[split[1]][split[2]] ~= value then
+			self.cp[split[1]][split[2]] = value
+		end
 		if CpManager.isMP and not noEventSend then
 			--print(courseplay.utils:getFnCallPath(2))
 			courseplay:debug(string.format("setCpVar: %s: %s -> send Event",varName,tostring(value)), 5);
 			CourseplayEvent.sendEvent(self, "self.cp."..varName, value)
 		end
-		if varName == "isDriving" then
-			courseplay:debug("reload page 1", 5);
-			courseplay.hud:setReloadPageOrder(self, 1, true);
-		elseif varName:sub(1, 3) == 'HUD' then
-			if Utils.startsWith(varName, 'HUD0') then
-				courseplay:debug("reload page 0", 5);
-				courseplay.hud:setReloadPageOrder(self, 0, true);
-			elseif Utils.startsWith(varName, 'HUD1') then
-				courseplay:debug("reload page 1", 5);
-				courseplay.hud:setReloadPageOrder(self, 1, true);
-			elseif Utils.startsWith(varName, 'HUD4') then
-				courseplay:debug("reload page 4", 5);
-				courseplay.hud:setReloadPageOrder(self, 4, true);
-			end;
-		elseif varName == 'waypointIndex' and self.cp.hud.currentPage == courseplay.hud.PAGE_CP_CONTROL and (self.cp.isRecording or self.cp.recordingIsPaused) and value and value == 4 then -- record pause action becomes available
-			courseplay.buttons:setActiveEnabled(self, 'recording');
-		end;
-	end;
+	end
 end;
+
 -- do not remove this comment
 -- vim: set noexpandtab:

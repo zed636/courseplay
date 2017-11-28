@@ -803,9 +803,9 @@ function courseplay:drive(self, dt)
 		local distance = (self.cp.stopWork-self.cp.waypointIndex) *self.cp.mediumWpDistance -- m
 		local speed = self.cruiseControl.speed/3.6   --m/s
 		local turnTime = math.floor(self.cp.calculatedTurnTime or 5)
-		self.cp.timeRemaining = distance/speed + turnTime
+		self:setCpVar('timeRemaining',distance/speed + turnTime,courseplay.isClient)
 	elseif not isFieldWorking then
-		self.cp.timeRemaining = nil
+		self:setCpVar('timeRemaining',nil,courseplay.isClient)
 	end 
 	
 	

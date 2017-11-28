@@ -702,7 +702,7 @@ function courseplay:getPivotJointNode(workTool)
 			if component.node == componentNode then
 				for jointIndex, joint in ipairs(workTool.componentJoints) do
 					-- Check if we have the right componentJoint and if it's an pivot joint
-					if joint.componentIndices[2] ~= nil and joint.rotLimit[2]~= nil and joint.componentIndices[2] == index and joint.rotLimit[2] > rad(15) then
+					if joint.componentIndices[2] ~= nil and joint.rotLimit~= nil and joint.rotLimit[2]~= nil and joint.componentIndices[2] == index and joint.rotLimit[2] > rad(15) then
 						-- Set the joint index and stop the loop.
 						workTool.cp.jointNode = workTool.componentJoints[jointIndex].jointNode;
 						break;

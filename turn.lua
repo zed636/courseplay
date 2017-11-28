@@ -2085,8 +2085,8 @@ function courseplay:startAlignmentCourse( vehicle, targetWaypoint )
 		local alignWp = { cx = point.posX, cz = point.posZ, x = point.posX, z = point.posZ } 
 		table.insert( vehicle.Waypoints, alignWp )
 		courseplay.debugVehicle( 14, vehicle, "(Align) Adding an alignment wp: (%1.f, %1.f)", point.posX, point.posZ )
-	end	
-	vehicle.cp.numWaypoints = #vehicle.Waypoints
+	end
+	vehicle:setCpVar('numWaypoints', #vehicle.Waypoints,courseplay.isClient);
 	courseplay:setWaypointIndex(vehicle, 1);
 end
 
@@ -2104,7 +2104,7 @@ end
 function courseplay:endAlignmentCourse( vehicle )
 	if courseplay:onAlignmentCourse( vehicle ) then
 		vehicle.Waypoints = vehicle.cp.alignment.savedWaypoints
-		vehicle.cp.numWaypoints = vehicle.cp.alignment.savedNumWaypoints
+		vehicle:setCpVar('numWaypoints', vehicle.cp.alignment.savedNumWaypoints,courseplay.isClient);
 		vehicle.cp.waypointIndex = vehicle.cp.alignment.savedWaypointIndex	
 		vehicle.cp.previousWaypointIndex = vehicle.cp.alignment.savedpreviousWaypointIndex	
 		vehicle.cp.stopAtEnd = vehicle.cp.alignment.stopAtEnd

@@ -16,7 +16,7 @@ function courseplay:start(self)
 	self.steeringEnabled = false;
 	self.disableCharacterOnLeave = false;
 
-	if self.vehicleCharacter ~= nil then
+	if self.vehicleCharacter ~= nil and not g_currentMission.missionDynamicInfo.isMultiplayer then --disabled for MP for further investigation (Nil errors in ingame(draw))
 		self.vehicleCharacter:delete();
 		self.vehicleCharacter:loadCharacter(self.currentHelper.xmlFilename, getUserRandomizedMpColor(self.currentHelper.name))
 		if self.isEntered then
@@ -30,8 +30,8 @@ function courseplay:start(self)
 	if courseplay.isClient then
 		return
 	end
-	
-	self.cp.numWaypoints= #self.Waypoints
+
+	self:setCpVar('numWaypoints', #self.Waypoints,courseplay.isClient);
 	if self.cp.numWaypoints < 1 then
 		return
 	end

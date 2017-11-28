@@ -15,7 +15,7 @@ function courseplay:load(savegame)
 	self.getIsCourseplayDriving = courseplay.getIsCourseplayDriving;
 	self.setIsCourseplayDriving = courseplay.setIsCourseplayDriving;
 	self.setCpVar = courseplay.setCpVar;
-
+	
 	--SEARCH AND SET self.name IF NOT EXISTING
 	if self.name == nil then
 		self.name = courseplay:getObjectName(self, xmlFile);
@@ -776,7 +776,11 @@ function courseplay:draw()
 		end;
 		if self.cp.distanceCheck and self.cp.numWaypoints > 1 then 
 			courseplay:distanceCheck(self);
+		elseif Utils.startsWith(self.cp.infoText, 'COURSEPLAY_DISTANCE') then  
+			self.cp.infoText = nil
+			self.cp.infoTextNilSent = false
 		end;
+		
 		if self.isEntered and self.cp.toolTip ~= nil then
 			courseplay:renderToolTip(self);
 		end;
@@ -914,7 +918,7 @@ function courseplay:update(dt)
 	end;
 
 	-- we are in record mode
-	if self.cp.isRecording and g_server ~= nil then
+	if self.cp.isRecording then
 		courseplay:record(self);
 	end;
 
@@ -1285,7 +1289,13 @@ function courseplay:readStream(streamId, connection)
 	self.cp.hasShovelStatePositions[3] = streamDebugReadBool(streamId)
 	self.cp.hasShovelStatePositions[4] = streamDebugReadBool(streamId)
 	self.cp.hasShovelStatePositions[5] = streamDebugReadBool(streamId) 
+	self.cp.multiTools = streamDebugReadInt32(streamId)
 	
+	local savedFieldNum = streamDebugReadInt32(streamId)
+	if savedFieldNum > 0 then
+		self.cp.generationPosition.fieldNum = savedFieldNum
+	end
+		
 	local copyCourseFromDriverId = streamDebugReadInt32(streamId)
 	if copyCourseFromDriverId then
 		self.cp.copyCourseFromDriver = networkGetObject(copyCourseFromDriverId) 
@@ -1409,8 +1419,8 @@ function courseplay:writeStream(streamId, connection)
 	streamDebugWriteBool(streamId, self.cp.hasShovelStatePositions[3])
 	streamDebugWriteBool(streamId, self.cp.hasShovelStatePositions[4])
 	streamDebugWriteBool(streamId, self.cp.hasShovelStatePositions[5])
-	
-	
+	streamDebugWriteInt32(streamId,Utils.getNoNil(self.cp.generationPosition.fieldNum,0))
+	streamDebugWriteInt32(streamId, self.cp.multiTools)
 	
 	local copyCourseFromDriverID;
 	if self.cp.copyCourseFromDriver ~= nil then
