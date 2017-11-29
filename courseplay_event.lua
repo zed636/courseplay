@@ -173,6 +173,7 @@ function CourseplayJoinFixEvent:writeStream(streamId, connection)
 			streamDebugWriteString(streamId, course.type)
 			streamDebugWriteInt32(streamId, course.id)
 			streamDebugWriteInt32(streamId, course.parent)
+			streamDebugWriteInt32(streamId, course.multiTools)
 			streamDebugWriteInt32(streamId, #(course.waypoints))
 			for w = 1, #(course.waypoints) do
 				streamDebugWriteFloat32(streamId, course.waypoints[w].cx)
@@ -242,6 +243,7 @@ function CourseplayJoinFixEvent:readStream(streamId, connection)
 			local courseType = streamDebugReadString(streamId)
 			local course_id = streamDebugReadInt32(streamId)
 			local courseParent = streamDebugReadInt32(streamId)
+			local courseMultiTools = streamDebugReadInt32(streamId)
 			local wp_count = streamDebugReadInt32(streamId)
 			local waypoints = {}
 			for w = 1, wp_count do
@@ -275,7 +277,7 @@ function CourseplayJoinFixEvent:readStream(streamId, connection)
 				};
 				table.insert(waypoints, wp)
 			end
-			local course = { id = course_id, uid = courseUid, type = courseType, name = course_name, nameClean = courseplay:normalizeUTF8(course_name), waypoints = waypoints, parent = courseParent }
+			local course = { id = course_id, uid = courseUid, type = courseType, name = course_name, nameClean = courseplay:normalizeUTF8(course_name), waypoints = waypoints, parent = courseParent, multiTools = courseMultiTools  }
 			g_currentMission.cp_courses[course_id] = course
 			g_currentMission.cp_sorted = courseplay.courses:sort()
 		end

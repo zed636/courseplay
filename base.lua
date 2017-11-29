@@ -776,7 +776,7 @@ function courseplay:draw()
 		end;
 		if self.cp.distanceCheck and self.cp.numWaypoints > 1 then 
 			courseplay:distanceCheck(self);
-		elseif Utils.startsWith(self.cp.infoText, 'COURSEPLAY_DISTANCE') then  
+		elseif self.cp.infoText ~= nil and Utils.startsWith(self.cp.infoText, 'COURSEPLAY_DISTANCE') then  
 			self.cp.infoText = nil
 			self.cp.infoTextNilSent = false
 		end;

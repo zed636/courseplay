@@ -534,6 +534,10 @@ end
 
 function courseplay.courses:saveCourseToXml(course_id, cpCManXml)
 	-- save course to xml file
+	if g_server == nil then
+		return
+	end
+	
 	local deleteFile = false
 	if cpCManXml == nil then
 		cpCManXml = self:getCourseManagerXML()

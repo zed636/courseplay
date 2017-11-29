@@ -1907,7 +1907,6 @@ function courseplay:setCpVar(varName, value, noEventSend)
 			end;
 		end;
 	elseif #split == 2 then
-		print("setDoubleCPVar: "..varName)
 		if self.cp[split[1]][split[2]] ~= value then
 			self.cp[split[1]][split[2]] = value
 		end
