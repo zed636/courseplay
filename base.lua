@@ -169,6 +169,14 @@ function courseplay:load(savegame)
 	self.cp.startAtPoint = courseplay.START_AT_NEXT_POINT;
 	self.cp.fertilizerOption = true
 	self.cp.convoyActive = false
+	self.cp.convoy= {
+					  distance = 0,
+					  number = 0,
+					  members = 0,
+					  }
+	
+	
+	
 
 	-- ai mode 9: shovel
 	self.cp.shovelEmptyPoint = nil;
@@ -1206,90 +1214,15 @@ end;
 
 function courseplay:readStream(streamId, connection)
 	courseplay:debug("id: "..tostring(self.id).."  base: readStream", 5)
-	--print(tostring(self.name).."  base: readStream")
-	self.cp.automaticCoverHandling = streamDebugReadBool(streamId);
-	self.cp.automaticUnloadingOnField = streamDebugReadBool(streamId);
-	courseplay:setCpMode(self, streamDebugReadInt32(streamId));
-	self.cp.turnDiameterAuto = streamDebugReadFloat32(streamId)
-	self.cp.canDrive = streamDebugReadBool(streamId);
-	self.cp.combineOffsetAutoMode = streamDebugReadBool(streamId);
-	self.cp.combineOffset = streamDebugReadFloat32(streamId)
-	self.cp.currentCourseName = streamDebugReadString(streamId);
-	self.cp.driverPriorityUseFillLevel = streamDebugReadBool(streamId);
-	self.cp.drivingDirReverse = streamDebugReadBool(streamId);
-	self.cp.fieldEdge.customField.isCreated = streamDebugReadBool(streamId);
-	self.cp.fieldEdge.customField.fieldNum = streamDebugReadInt32(streamId)
-	self.cp.fieldEdge.customField.selectedFieldNumExists = streamDebugReadBool(streamId)
-	self.cp.fieldEdge.selectedField.fieldNum = streamDebugReadInt32(streamId) 
-	self.cp.globalInfoTextLevel = streamDebugReadInt32(streamId)
-	self.cp.hasBaleLoader = streamDebugReadBool(streamId);
-	self.cp.hasStartingCorner = streamDebugReadBool(streamId);
-	self.cp.hasStartingDirection = streamDebugReadBool(streamId);
-	self.cp.hasValidCourseGenerationData = streamDebugReadBool(streamId);
-	self.cp.headland.numLanes = streamDebugReadInt32(streamId)
-	self.cp.headland.turnType = streamDebugReadInt32(streamId)
-    self.cp.hasUnloadingRefillingCourse	 = streamDebugReadBool(streamId);
-	courseplay:setInfoText(self, streamDebugReadString(streamId));
-	self.cp.returnToFirstPoint = streamDebugReadBool(streamId);
-	self.cp.ridgeMarkersAutomatic = streamDebugReadBool(streamId);
-	self.cp.shovelStopAndGo = streamDebugReadBool(streamId);
-	self.cp.startAtPoint = streamDebugReadInt32(streamId);
-	courseplay:setStopAtEnd(self, streamDebugReadBool(streamId));
-	self:setIsCourseplayDriving(streamDebugReadBool(streamId));
-	self.cp.hud.openWithMouse = streamDebugReadBool(streamId)
-	self.cp.realisticDriving = streamDebugReadBool(streamId);
-	self.cp.driveOnAtFillLevel = streamDebugReadFloat32(streamId)
-	self.cp.followAtFillLevel = streamDebugReadFloat32(streamId)
-	self.cp.refillUntilPct = streamDebugReadFloat32(streamId)
-	self.cp.tipperOffset = streamDebugReadFloat32(streamId)
-	self.cp.tipperHasCover = streamDebugReadBool(streamId);
-	self.cp.workWidth = streamDebugReadFloat32(streamId) 
-	self.cp.turnDiameterAutoMode = streamDebugReadBool(streamId);
-	self.cp.turnDiameter = streamDebugReadFloat32(streamId)
-	self.cp.speeds.useRecordingSpeed = streamDebugReadBool(streamId) 
-	self.cp.coursePlayerNum = streamReadFloat32(streamId)
-	self.cp.laneOffset = streamDebugReadFloat32(streamId)
-	self.cp.toolOffsetX = streamDebugReadFloat32(streamId)
-	self.cp.toolOffsetZ = streamDebugReadFloat32(streamId)
-	self.cp.loadUnloadOffsetX = streamDebugReadFloat32(streamId)
-	self.cp.loadUnloadOffsetZ = streamDebugReadFloat32(streamId)
-	courseplay:setHudPage(self, streamDebugReadInt32(streamId));
-	self.cp.HUD0noCourseplayer = streamDebugReadBool(streamId);
-	self.cp.HUD0wantsCourseplayer = streamDebugReadBool(streamId);
-	self.cp.HUD0combineForcedSide = streamDebugReadString(streamId);
-	self.cp.HUD0isManual = streamDebugReadBool(streamId);
-	self.cp.HUD0turnStage = streamDebugReadInt32(streamId);
-	self.cp.HUD0tractorForcedToStop = streamDebugReadBool(streamId);
-	self.cp.HUD0tractorName = streamDebugReadString(streamId);
-	self.cp.HUD0tractor = streamDebugReadBool(streamId);
-	self.cp.HUD1wait = streamDebugReadBool(streamId);
-	self.cp.HUD1noWaitforFill = streamDebugReadBool(streamId);
-	self.cp.HUD4hasActiveCombine = streamDebugReadBool(streamId);
-	self.cp.HUD4combineName = streamDebugReadString(streamId);
-	self.cp.HUD4savedCombine = streamDebugReadBool(streamId);
-	self.cp.HUD4savedCombineName = streamDebugReadString(streamId);
-	self.cp.waypointIndex = streamDebugReadInt32(streamId);
-	self.cp.isRecording = streamDebugReadBool(streamId);
-	self.cp.recordingIsPaused = streamDebugReadBool(streamId);
-	self.cp.searchCombineAutomatically = streamDebugReadBool(streamId)
-	self.cp.searchCombineOnField = streamDebugReadInt32(streamId)
-	self.cp.speeds.turn = streamDebugReadFloat32(streamId)
-	self.cp.speeds.field = streamDebugReadFloat32(streamId)
-	self.cp.speeds.reverse = streamDebugReadFloat32(streamId)
-	self.cp.speeds.street = streamDebugReadFloat32(streamId)
-	self.cp.visualWaypointsStartEnd = streamDebugReadBool(streamId);
-	self.cp.visualWaypointsAll = streamDebugReadBool(streamId);
-	self.cp.visualWaypointsCrossing = streamDebugReadBool(streamId);
-	self.cp.warningLightsMode = streamDebugReadInt32(streamId)
-	self.cp.waitTime = streamDebugReadInt32(streamId)
-	self.cp.symmetricLaneChange = streamDebugReadBool(streamId)
-	self.cp.startingCorner = streamDebugReadInt32(streamId)
-	self.cp.startingDirection = streamDebugReadInt32(streamId)
-	self.cp.hasShovelStatePositions[2] = streamDebugReadBool(streamId)
-	self.cp.hasShovelStatePositions[3] = streamDebugReadBool(streamId)
-	self.cp.hasShovelStatePositions[4] = streamDebugReadBool(streamId)
-	self.cp.hasShovelStatePositions[5] = streamDebugReadBool(streamId) 
-	self.cp.multiTools = streamDebugReadInt32(streamId)
+		
+	for _,variable in ipairs(courseplay.multiplayerSyncTable)do
+		local value = courseplay.streamDebugRead(streamId, variable.dataFormat)
+		if variable.dataFormat == 'String' and value == 'nil'
+			value = nil
+		end
+		courseplay:setVarValueFromString(self, variable.name, value)
+	end
+	courseplay:debug("id: "..tostring(networkGetObjectId(self)).."  base: read courseplay.multiplayerSyncTable end", 5)
 	
 	local savedFieldNum = streamDebugReadInt32(streamId)
 	if savedFieldNum > 0 then
@@ -1335,92 +1268,13 @@ end
 
 function courseplay:writeStream(streamId, connection)
 	courseplay:debug("id: "..tostring(networkGetObjectId(self)).."  base: write stream", 5)
-	--print(tostring(self.name).."  base: write stream")
-	
-	streamDebugWriteBool(streamId, self.cp.automaticCoverHandling);
-	streamDebugWriteBool(streamId, self.cp.automaticUnloadingOnField);
-	streamDebugWriteInt32(streamId,self.cp.mode);
-	streamDebugWriteFloat32(streamId,self.cp.turnDiameterAuto);
-	streamDebugWriteBool(streamId, self.cp.canDrive);
-	streamDebugWriteBool(streamId, self.cp.combineOffsetAutoMode);
-	streamDebugWriteFloat32(streamId,self.cp.combineOffset)
-	streamDebugWriteString(streamId,self.cp.currentCourseName);
-	streamDebugWriteBool(streamId, self.cp.driverPriorityUseFillLevel);
-	streamDebugWriteBool(streamId, self.cp.drivingDirReverse);
-	streamDebugWriteBool(streamId, self.cp.fieldEdge.customField.isCreated );
-	streamDebugWriteInt32(streamId,self.cp.fieldEdge.customField.fieldNum)
-	streamDebugWriteBool(streamId, self.cp.fieldEdge.customField.selectedFieldNumExists)
-	streamDebugWriteInt32(streamId,self.cp.fieldEdge.selectedField.fieldNum) 
-	streamDebugWriteInt32(streamId,self.cp.globalInfoTextLevel)
-	streamDebugWriteBool(streamId, self.cp.hasBaleLoader );
-	streamDebugWriteBool(streamId, self.cp.hasStartingCorner );
-	streamDebugWriteBool(streamId, self.cp.hasStartingDirection );
-	streamDebugWriteBool(streamId, self.cp.hasValidCourseGenerationData );
-	streamDebugWriteInt32(streamId,self.cp.headland.numLanes )
-	streamDebugWriteInt32(streamId,self.cp.headland.turnType )
-    streamDebugWriteBool(streamId, self.cp.hasUnloadingRefillingCourse	);
-	streamDebugWriteString(streamId,self.cp.infoText);
-	streamDebugWriteBool(streamId, self.cp.returnToFirstPoint);
-	streamDebugWriteBool(streamId, self.cp.ridgeMarkersAutomatic);
-	streamDebugWriteBool(streamId, self.cp.shovelStopAndGo);
-	streamDebugWriteInt32(streamId,self.cp.startAtPoint);
-	streamDebugWriteBool(streamId, self.cp.stopAtEnd);
-	streamDebugWriteBool(streamId, self:getIsCourseplayDriving());
-	streamDebugWriteBool(streamId, self.cp.hud.openWithMouse)
-	streamDebugWriteBool(streamId, self.cp.realisticDriving);
-	streamDebugWriteFloat32(streamId,self.cp.driveOnAtFillLevel)
-	streamDebugWriteFloat32(streamId,self.cp.followAtFillLevel)
-	streamDebugWriteFloat32(streamId,self.cp.refillUntilPct)
-	streamDebugWriteFloat32(streamId,self.cp.tipperOffset)
-	streamDebugWriteBool(streamId, self.cp.tipperHasCover);
-	streamDebugWriteFloat32(streamId,self.cp.workWidth) 
-	streamDebugWriteBool(streamId, self.cp.turnDiameterAutoMode);
-	streamDebugWriteFloat32(streamId,self.cp.turnDiameter)
-	streamDebugWriteBool(streamId, self.cp.speeds.useRecordingSpeed) 
-	streamDebugWriteFloat32(streamId,self.cp.coursePlayerNum)
-	streamDebugWriteFloat32(streamId,self.cp.laneOffset)
-	streamDebugWriteFloat32(streamId,self.cp.toolOffsetX )
-	streamDebugWriteFloat32(streamId,self.cp.toolOffsetZ)
-	streamDebugWriteFloat32(streamId,self.cp.loadUnloadOffsetX)
-	streamDebugWriteFloat32(streamId,self.cp.loadUnloadOffsetZ)
-	streamDebugWriteFloat32(streamId,self.cp.hud.currentPage);
-	streamDebugWriteBool(streamId, self.cp.HUD0noCourseplayer);
-	streamDebugWriteBool(streamId, self.cp.HUD0wantsCourseplayer);
-	streamDebugWriteString(streamId,self.cp.HUD0combineForcedSide);
-	streamDebugWriteBool(streamId, self.cp.HUD0isManual);
-	streamDebugWriteInt32(streamId,self.cp.HUD0turnStage);
-	streamDebugWriteBool(streamId, self.cp.HUD0tractorForcedToStop );
-	streamDebugWriteString(streamId,self.cp.HUD0tractorName );
-	streamDebugWriteBool(streamId, self.cp.HUD0tractor);
-	streamDebugWriteBool(streamId, self.cp.HUD1wait );
-	streamDebugWriteBool(streamId, self.cp.HUD1noWaitforFill );
-	streamDebugWriteBool(streamId, self.cp.HUD4hasActiveCombine);
-	streamDebugWriteString(streamId,self.cp.HUD4combineName );
-	streamDebugWriteBool(streamId, self.cp.HUD4savedCombine);
-	streamDebugWriteString(streamId,self.cp.HUD4savedCombineName);
-	streamDebugWriteInt32(streamId,self.cp.waypointIndex);
-	streamDebugWriteBool(streamId, self.cp.isRecording);
-	streamDebugWriteBool(streamId, self.cp.recordingIsPaused);
-	streamDebugWriteBool(streamId, self.cp.searchCombineAutomatically)
-	streamDebugWriteInt32(streamId,self.cp.searchCombineOnField)
-	streamDebugWriteFloat32(streamId,self.cp.speeds.turn)
-	streamDebugWriteFloat32(streamId,self.cp.speeds.field)
-	streamDebugWriteFloat32(streamId,self.cp.speeds.reverse)
-	streamDebugWriteFloat32(streamId,self.cp.speeds.street)
-	streamDebugWriteBool(streamId, self.cp.visualWaypointsStartEnd);
-	streamDebugWriteBool(streamId, self.cp.visualWaypointsAll);
-	streamDebugWriteBool(streamId, self.cp.visualWaypointsCrossing);
-	streamDebugWriteInt32(streamId,self.cp.warningLightsMode)
-	streamDebugWriteInt32(streamId,self.cp.waitTime)
-	streamDebugWriteBool(streamId, self.cp.symmetricLaneChange)
-	streamDebugWriteInt32(streamId,self.cp.startingCorner)
-	streamDebugWriteInt32(streamId,self.cp.startingDirection)
-	streamDebugWriteBool(streamId, self.cp.hasShovelStatePositions[2])
-	streamDebugWriteBool(streamId, self.cp.hasShovelStatePositions[3])
-	streamDebugWriteBool(streamId, self.cp.hasShovelStatePositions[4])
-	streamDebugWriteBool(streamId, self.cp.hasShovelStatePositions[5])
-	streamDebugWriteInt32(streamId,Utils.getNoNil(self.cp.generationPosition.fieldNum,0))
-	streamDebugWriteInt32(streamId, self.cp.multiTools)
+		
+	for _,variable in ipairs(courseplay.multiplayerSyncTable)do
+		courseplay.streamDebugWrite(streamId, variable.dataFormat, courseplay:getVarValueFromString(self,variable.name),variable.name)
+	end
+	courseplay:debug("id: "..tostring(networkGetObjectId(self)).."  base: write courseplay.multiplayerSyncTable end", 5)
+
+	streamDebugWriteInt32(streamId, self.cp.generationPosition.fieldNum)
 	
 	local copyCourseFromDriverID;
 	if self.cp.copyCourseFromDriver ~= nil then
@@ -1455,6 +1309,7 @@ function courseplay:writeStream(streamId, connection)
 
 	local debugChannelsString = table.concat(table.map(courseplay.debugChannels, tostring), ",");
 	streamDebugWriteString(streamId, debugChannelsString) 
+	
 	courseplay:debug("id: "..tostring(networkGetObjectId(self)).."  base: write stream end", 5)
 end
 
@@ -1534,7 +1389,7 @@ function courseplay:loadVehicleCPSettings(xmlFile, key, resetVehicles)
 		self.cp.generationPosition.z = Utils.getNoNil(getXMLFloat(xmlFile, curKey .. '#savedPositionZ'),	     0);
 		self.cp.generationPosition.fieldNum = Utils.getNoNil(  getXMLInt(xmlFile, curKey .. '#savedFieldNum'),			 0);
 		self.cp.fertilizerOption	  = Utils.getNoNil( getXMLBool(xmlFile, curKey .. '#fertilizerOption'),		 true);
-		
+		self.cp.convoyActive		 =	Utils.getNoNil( getXMLBool(xmlFile, curKey .. '#convoyActive'),		 false);
 		if self.cp.abortWork 		  == 0 then
 			self.cp.abortWork = nil;
 		end;
@@ -1690,7 +1545,7 @@ function courseplay:getSaveAttributesAndNodes(nodeIdent)
 	--local cpOpen = string.format('<courseplay aiMode=%q courses=%q openHudWithMouse=%q lights=%q visualWaypointsStartEnd=%q visualWaypointsAll=%q visualWaypointsCrossing=%q waitTime=%q >', tostring(self.cp.mode), tostring(table.concat(self.cp.loadedCourses, ",")), tostring(self.cp.hud.openWithMouse), tostring(self.cp.warningLightsMode), tostring(self.cp.visualWaypointsStartEnd), tostring(self.cp.visualWaypointsAll), tostring(self.cp.visualWaypointsCrossing), tostring(self.cp.waitTime));
 	local speeds = string.format('<speeds useRecordingSpeed=%q reverse="%d" turn="%d" field="%d" max="%d" />', tostring(self.cp.speeds.useRecordingSpeed), self.cp.speeds.reverse, self.cp.speeds.turn, self.cp.speeds.field, self.cp.speeds.street);
 	local combi = string.format('<combi tipperOffset="%.1f" combineOffset="%.1f" combineOffsetAutoMode=%q fillFollow="%d" fillDriveOn="%d" turnDiameter="%d" realisticDriving=%q allwaysSearchFuel=%q />', self.cp.tipperOffset, self.cp.combineOffset, tostring(self.cp.combineOffsetAutoMode), self.cp.followAtFillLevel, self.cp.driveOnAtFillLevel, self.cp.turnDiameter, tostring(self.cp.realisticDriving),tostring(self.cp.allwaysSearchFuel));
-	local fieldWork = string.format('<fieldWork workWidth="%.1f" ridgeMarkersAutomatic=%q offsetData=%q abortWork="%d" refillUntilPct="%d" turnOnField=%q oppositeTurnMode=%q manualWorkWidth="%.1f" ploughFieldEdge=%q lastValidTipDistance="%.1f" hasSavedPosition=%q savedPositionX="%f" savedPositionZ="%f" savedFieldNum="%d" fertilizerOption=%q />', self.cp.workWidth, tostring(self.cp.ridgeMarkersAutomatic), offsetData, Utils.getNoNil(self.cp.abortWork, 0), self.cp.refillUntilPct, tostring(self.cp.turnOnField), tostring(self.cp.oppositeTurnMode),Utils.getNoNil(self.cp.manualWorkWidth,0),tostring(self.cp.ploughFieldEdge),Utils.getNoNil(self.cp.lastValidTipDistance,0),tostring(self.cp.generationPosition.hasSavedPosition),Utils.getNoNil(self.cp.generationPosition.x,0),Utils.getNoNil(self.cp.generationPosition.z,0),Utils.getNoNil(self.cp.generationPosition.fieldNum,0), tostring(self.cp.fertilizerOption));
+	local fieldWork = string.format('<fieldWork workWidth="%.1f" ridgeMarkersAutomatic=%q offsetData=%q abortWork="%d" refillUntilPct="%d" turnOnField=%q oppositeTurnMode=%q manualWorkWidth="%.1f" ploughFieldEdge=%q lastValidTipDistance="%.1f" hasSavedPosition=%q savedPositionX="%f" savedPositionZ="%f" savedFieldNum="%d" fertilizerOption=%q convoyActive=%q /> ', self.cp.workWidth, tostring(self.cp.ridgeMarkersAutomatic), offsetData, Utils.getNoNil(self.cp.abortWork, 0), self.cp.refillUntilPct, tostring(self.cp.turnOnField), tostring(self.cp.oppositeTurnMode),Utils.getNoNil(self.cp.manualWorkWidth,0),tostring(self.cp.ploughFieldEdge),Utils.getNoNil(self.cp.lastValidTipDistance,0),tostring(self.cp.generationPosition.hasSavedPosition),Utils.getNoNil(self.cp.generationPosition.x,0),Utils.getNoNil(self.cp.generationPosition.z,0),Utils.getNoNil(self.cp.generationPosition.fieldNum,0), tostring(self.cp.fertilizerOption),tostring(self.cp.convoyActive));
 	local mode10 = string.format('<mode10 leveling=%q  CourseplayersOnly=%q searchRadius="%i" maxSiloSpeed="%i" shieldHeight="%.1f" automaticSpeed=%q  automaticHeight=%q bladeOffset="%.1f" drivingThroughtLoading=%q />', tostring(self.cp.mode10.leveling), tostring(self.cp.mode10.searchCourseplayersOnly), self.cp.mode10.searchRadius, self.cp.speeds.bunkerSilo, self.cp.mode10.shieldHeight, tostring(self.cp.mode10.automaticSpeed),tostring(self.cp.mode10.automaticHeigth), self.cp.mode10.bladeOffset, tostring(self.cp.mode10.drivingThroughtLoading));
 	local shovels, combine = '', '';
 	if shovelRotsAttrNodes or shovelTransAttrNodes then

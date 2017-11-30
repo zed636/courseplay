@@ -12,34 +12,31 @@ function courseplay:record(vehicle)
 		local prevPoint = vehicle.Waypoints[vehicle.cp.waypointIndex - 1];
 		local prevCx, prevCz, prevAngle = prevPoint.cx, prevPoint.cz, prevPoint.angle;
 		local dist = courseplay:distance(cx, cz, prevCx, prevCz);
-
 		if not CpManager.isDeveloper and vehicle.cp.waypointIndex <= 3 then
 			-- this is a hack to make sure that tractors won't circle around in mode 2:
 			-- the second wp is 10 meters from the first and the third is 20 meters from the second
 			-- this does not allow tight turns at the beginning of a recorded course
-			
-			--vehicle.cp.recordingTimer = dist > (vehicle.cp.waypointIndex == 3 and 20 or 10) and 101 or 1;
-			vehicle:setCpVar('recordingTimer',dist > (vehicle.cp.waypointIndex == 3 and 20 or 10) and 101 or 1,courseplay.isClient);
+			vehicle.cp.recordingTimer = dist > (vehicle.cp.waypointIndex == 3 and 20 or 10) and 101 or 1;
 		else
 			local angleDiff = abs(newAngle - prevAngle);
 
 			if vehicle.cp.drivingDirReverse == true then
 				if dist > 2 and (angleDiff > 1.5 or dist > 10) then
-					vehicle:setCpVar('recordingTimer',101,courseplay.isClient);
+					vehicle.cp.recordingTimer = 101;
 				end;
 			else
 				if CpManager.isDeveloper then 
 					if dist > 10 or ( angleDiff > 5 and dist > 1.5 ) then
 						-- allow for mor frequent recording in developer mode
-						vehicle:setCpVar('recordingTimer',101,courseplay.isClient);
+						vehicle.cp.recordingTimer = 101;
 					end
 				else
 					if dist > 5 and (angleDiff > 5 or dist > 10) then
-						vehicle:setCpVar('recordingTimer',101,courseplay.isClient);
+						vehicle.cp.recordingTimer = 101;
 					end;
-				end
+				end;
+			end;
 		end;
-	end;
 	end;
 	vehicle.cp.curSpeed = ceil(vehicle.lastSpeedReal*3600)
 	if vehicle.cp.recordingTimer > 100 then
@@ -48,8 +45,8 @@ function courseplay:record(vehicle)
 		courseplay:setNewWaypointFromRecording(vehicle, cx, cz, newAngle, nil,nil, rev, crossing, vehicle.cp.curSpeed);
 		local signType = vehicle.cp.waypointIndex == 1 and "start" or nil;
 		courseplay.signs:addSign(vehicle, signType, cx, cz, nil, newAngle, nil, nil, 'regular');
-		vehicle:setCpVar('recordingTimer',1,courseplay.isClient);
-		courseplay:setWaypointIndex(vehicle, vehicle.cp.waypointIndex + 1);
+		vehicle.cp.recordingTimer = 1;
+		courseplay:setWaypointIndex(vehicle, vehicle.cp.waypointIndex + 1,true);
 	end;
 end;
 
@@ -61,8 +58,8 @@ function courseplay:set_waitpoint(vehicle)
 	local rev = courseplay:trueOrNil(vehicle.cp.drivingDirReverse);
 	local crossing;
 	courseplay:setNewWaypointFromRecording(vehicle, cx, cz, newAngle, wait,unload, rev, crossing, 0);
-	vehicle:setCpVar('recordingTimer',1,courseplay.isClient);
-	courseplay:setWaypointIndex(vehicle, vehicle.cp.waypointIndex + 1);
+	vehicle.cp.recordingTimer = 1;
+	courseplay:setWaypointIndex(vehicle, vehicle.cp.waypointIndex + 1,true);
 	vehicle.cp.numWaitPoints = vehicle.cp.numWaitPoints + 1;
 	courseplay.signs:addSign(vehicle, 'wait', cx, cz, nil, newAngle, nil, nil, 'regular');
 end
@@ -75,8 +72,8 @@ function courseplay:set_unloadPoint(vehicle)
 	local rev = courseplay:trueOrNil(vehicle.cp.drivingDirReverse);
 	local crossing;
 	courseplay:setNewWaypointFromRecording(vehicle, cx, cz, newAngle, wait,unload , rev, crossing, 0);
-	vehicle:setCpVar('recordingTimer',1,courseplay.isClient);
-	courseplay:setWaypointIndex(vehicle, vehicle.cp.waypointIndex + 1);
+	vehicle.cp.recordingTimer = 1;
+	courseplay:setWaypointIndex(vehicle, vehicle.cp.waypointIndex + 1,true);
 	courseplay.signs:addSign(vehicle, 'unload', cx, cz, nil, newAngle, nil, nil, 'regular');
 
 end
@@ -89,8 +86,8 @@ function courseplay:set_crossing(vehicle, stop)
 	local rev = courseplay:trueOrNil(vehicle.cp.drivingDirReverse);
 	local crossing = true;
 	courseplay:setNewWaypointFromRecording(vehicle, cx, cz, newAngle, wait,unload, rev, crossing, vehicle.cp.curSpeed);
-	vehicle:setCpVar('recordingTimer',1,courseplay.isClient);
-	courseplay:setWaypointIndex(vehicle, vehicle.cp.waypointIndex + 1);
+	vehicle.cp.recordingTimer = 1;
+	courseplay:setWaypointIndex(vehicle, vehicle.cp.waypointIndex + 1,true);
 	vehicle.cp.numCrossingPoints = vehicle.cp.numCrossingPoints + 1
 	if stop ~= nil then
 		courseplay.signs:addSign(vehicle, 'stop', cx, cz, nil, newAngle, nil, nil, 'regular');
@@ -102,15 +99,16 @@ end
 
 -- starts course recording -- just setting variables
 function courseplay:start_record(vehicle)
+	print("courseplay:start_record called")
 	--    courseplay:clearCurrentLoadedCourse(vehicle)
 	courseplay:setIsRecording(vehicle, true);
 	courseplay:setRecordingIsPaused(vehicle, false);
 	vehicle:setIsCourseplayDriving(false);
 	vehicle.cp.loadedCourses = {}
-	courseplay:setWaypointIndex(vehicle, 1);
+	courseplay:setWaypointIndex(vehicle, 1,true);
 	vehicle.cp.numWaitPoints = 0;
 	vehicle.cp.numCrossingPoints = 0;
-	vehicle:setCpVar('recordingTimer',101,courseplay.isClient);
+	vehicle.cp.recordingTimer = 101;
 	vehicle.cp.drivingDirReverse = false;
 
 	courseplay.signs:updateWaypointSigns(vehicle, "current");
@@ -120,14 +118,15 @@ end
 
 -- stops course recording -- just setting variables
 function courseplay:stop_record(vehicle)
+	print("courseplay:stop_record called")
 	courseplay:set_crossing(vehicle, true);
 	courseplay:setIsRecording(vehicle, false);
 	courseplay:setRecordingIsPaused(vehicle, false);
 	vehicle:setIsCourseplayDriving(false);
 	vehicle:setCpVar('distanceCheck',false,courseplay.isClient);
 	vehicle:setCpVar('canDrive',true,courseplay.isClient);
-	vehicle:setCpVar('numWaypoints', vehicle.cp.waypointIndex - 1,courseplay.isClient);
-	courseplay:setWaypointIndex(vehicle, 1);
+	vehicle.cp.numWaypoints = vehicle.cp.waypointIndex - 1;
+	courseplay:setWaypointIndex(vehicle, 1,true);
 	vehicle.cp.numCourses = 1;
 
 	courseplay:validateCourseGenerationData(vehicle);
@@ -211,8 +210,8 @@ function courseplay:setRecordingTurnManeuver(vehicle)
 		courseplay:setNewWaypointFromRecording(vehicle, cx, cz, newAngle, wait,unload, rev, crossing, vehicle.cp.curSpeed, nil, true);
 	end;
 
-	vehicle:setCpVar('recordingTimer',1,courseplay.isClient);
-	courseplay:setWaypointIndex(vehicle, vehicle.cp.waypointIndex + 1);
+	vehicle.cp.recordingTimer = 1;
+	courseplay:setWaypointIndex(vehicle, vehicle.cp.waypointIndex + 1,true);
 	local diamondColor = vehicle.cp.isRecordingTurnManeuver and 'turnStart' or 'turnEnd';
 	courseplay.signs:addSign(vehicle, 'normal', cx, cz, nil, newAngle, nil, nil, diamondColor);
 	courseplay.buttons:setActiveEnabled(vehicle, 'recording');
@@ -231,8 +230,8 @@ function courseplay:change_DriveDirection(vehicle)
 	else
 		vehicle.cp.hud.recordingDriveDirectionButton:setToolTip(courseplay:loc('COURSEPLAY_RECORDING_REVERSE_START'));
 	end;
-	vehicle:setCpVar('recordingTimer',1,courseplay.isClient);
-	courseplay:setWaypointIndex(vehicle, vehicle.cp.waypointIndex + 1);
+	vehicle.cp.recordingTimer = 1;
+	courseplay:setWaypointIndex(vehicle, vehicle.cp.waypointIndex + 1,true);
 	courseplay.signs:addSign(vehicle, 'normal', cx, cz, nil, newAngle, nil, nil, 'regular');
 	courseplay.buttons:setActiveEnabled(vehicle, 'recording');
 end
@@ -240,8 +239,8 @@ end
 -- delete last waypoint
 function courseplay:delete_waypoint(vehicle)
 	if vehicle.cp.waypointIndex > 3 then
-		courseplay:setWaypointIndex(vehicle, vehicle.cp.waypointIndex - 1);
-		vehicle:setCpVar('recordingTimer',1,courseplay.isClient);
+		courseplay:setWaypointIndex(vehicle, vehicle.cp.waypointIndex - 1,true);
+		vehicle.cp.recordingTimer = 1;
 
 		--delete last sign
 		local lastSignIndex = #vehicle.cp.signs.current;
@@ -252,7 +251,7 @@ function courseplay:delete_waypoint(vehicle)
 		local oldSignType = vehicle.cp.signs.current[oldSignIndex].type;
 		courseplay.signs:changeSignType(vehicle, oldSignIndex, oldSignType, "stop");
 		vehicle.Waypoints[vehicle.cp.waypointIndex] = nil
-		vehicle:setCpVar('numWaypoints', vehicle.cp.waypointIndex,courseplay.isClient);
+		vehicle.cp.numWaypoints = vehicle.cp.waypointIndex;
 	end;
 	courseplay.buttons:setActiveEnabled(vehicle, 'recording');
 end;
@@ -260,7 +259,7 @@ end;
 -- clears current course -- just setting variables
 function courseplay:clearCurrentLoadedCourse(vehicle)
 	courseplay.courses:resetMerged();
-	courseplay:setWaypointIndex(vehicle, 1);
+	courseplay:setWaypointIndex(vehicle, 1,true);
 	vehicle.cp.curTarget.x, vehicle.cp.curTarget.y, vehicle.cp.curTarget.z = nil, nil, nil;
 	vehicle.cp.nextTargets = {};
 	if vehicle.cp.activeCombine ~= nil then
@@ -272,14 +271,14 @@ function courseplay:clearCurrentLoadedCourse(vehicle)
 	if vehicle.cp.mode == courseplay.MODE_COMBI or vehicle.cp.mode == courseplay.MODE_OVERLOADER then
 		courseplay:setModeState(vehicle, 0);
 	end;
-	vehicle:setCpVar('recordingTimer',1,courseplay.isClient);
+	vehicle.cp.recordingTimer = 1;
 	vehicle.Waypoints = {}
 	vehicle:setCpVar('canDrive',false,courseplay.isClient);
 	vehicle.cp.abortWork = nil
 	courseplay:resetTipTrigger(vehicle);
 	vehicle.cp.lastMergedWP = 1;
 	vehicle.cp.numCourses = 0;
-	vehicle:setCpVar('numWaypoints', 0,courseplay.isClient);
+	vehicle.cp.numWaypoints = 0;
 	vehicle.cp.numWaitPoints = 0;
 	vehicle.cp.waitPoints = {};
 
@@ -319,7 +318,8 @@ end;
 
 function courseplay:setIsRecording(vehicle, isRecording)
 	if vehicle.cp.isRecording ~= isRecording then
-		vehicle:setCpVar('isRecording',isRecording,courseplay.isClient);
+		vehicle.cp.isRecording = isRecording
+		--vehicle:setCpVar('isRecording',isRecording,courseplay.isClient);
 	end;
 end;
 
@@ -332,7 +332,7 @@ end;
 function courseplay:setNewWaypointFromRecording(vehicle, cx, cz, angle, wait,unload, rev, crossing, speed, turnStart, turnEnd)
 	vehicle.Waypoints[vehicle.cp.waypointIndex] = { cx = cx, cz = cz, angle = angle, wait = wait,unload = unload, rev = rev, crossing = crossing, speed = speed, turnStart = turnStart, turnEnd = turnEnd };
 	courseplay:debug(string.format('%s: recording: set new waypoint (#%d): cx,cz=%.1f,%.1f, angle=%.1f, wait=%s, rev=%s, crossing=%s, speed=%.5f, turnStart=%s, turnEnd=%s', nameNum(vehicle), vehicle.cp.waypointIndex, cx, cz, angle, tostring(wait), tostring(rev), tostring(crossing), speed, tostring(turnStart), tostring(turnEnd)), 16);
-	vehicle:setCpVar('numWaypoints', vehicle.cp.waypointIndex,courseplay.isClient);
+	vehicle.cp.numWayPoints = vehicle.cp.waypointIndex
 end;
 
 function courseplay:addSplitRecordingPoints(vehicle)
@@ -361,15 +361,15 @@ function courseplay:addSplitRecordingPoints(vehicle)
 
 			courseplay:setNewWaypointFromRecording(vehicle, x, z, angle, nil,nil, nil, nil,     speed);
 			courseplay.signs:addSign(vehicle, nil, x, z, nil, angle, nil, nil, 'regular');
-			courseplay:setWaypointIndex(vehicle, vehicle.cp.waypointIndex + 1);
+			courseplay:setWaypointIndex(vehicle, vehicle.cp.waypointIndex + 1,true);
 		end;
 	end;
 
 	-- add current position as last new point
 	courseplay:setNewWaypointFromRecording(vehicle, cx, cz, angle, nil,nil, nil, nil,     speed);
 	courseplay.signs:addSign(vehicle, 'stop', cx, cz, nil, angle);
-	vehicle:setCpVar('recordingTimer',1,courseplay.isClient);
-	courseplay:setWaypointIndex(vehicle, vehicle.cp.waypointIndex + 1);
+	vehicle.cp.recordingTimer = 1;
+	courseplay:setWaypointIndex(vehicle, vehicle.cp.waypointIndex + 1,true);
 	courseplay.buttons:setActiveEnabled(vehicle, 'recording');
 end;
 -- do not remove this comment

@@ -127,7 +127,8 @@ function courseplay:loadCourse(vehicle, id, useRealId, addCourseAtEnd) -- fn is 
 		if #vehicle.Waypoints == 0 then
 			vehicle.cp.numCourses = 1;
 			vehicle.Waypoints = course.waypoints
-			vehicle:setCpVar('numWaypoints', #vehicle.Waypoints,courseplay.isClient);
+			--vehicle:setCpVar('numWaypoints', #vehicle.Waypoints,courseplay.isClient);
+			vehicle.cp.numWayPoints = #vehicle.Waypoints;
 			vehicle:setCpVar('currentCourseName',course.name,courseplay.isClient)
 
 			-- for turn maneuver
@@ -232,7 +233,8 @@ function courseplay:loadCourse(vehicle, id, useRealId, addCourseAtEnd) -- fn is 
 			for i=course2wp, numCourse2 do
 				table.insert(vehicle.Waypoints, course2[i]);
 			end;
-			vehicle:setCpVar('numWaypoints', #vehicle.Waypoints,courseplay.isClient);
+			vehicle.cp.numWayPoints = #vehicle.Waypoints;
+			--vehicle:setCpVar('numWaypoints', #vehicle.Waypoints,courseplay.isClient);
 			vehicle.cp.numCourses = vehicle.cp.numCourses + 1;
 			vehicle:setCpVar('currentCourseName',string.format("%d %s", vehicle.cp.numCourses, courseplay:loc('COURSEPLAY_COMBINED_COURSES')),courseplay.isClient);
 
@@ -725,9 +727,11 @@ function courseplay.courses:removeFromManagerXml(type, type_id, cpCManXml)
 		end;
 	end;
 
-	saveXMLFile(cpCManXml)
-	if deleteFile then
-		delete(cpCManXml)
+	if g_server~= nil then
+		saveXMLFile(cpCManXml)
+		if deleteFile then
+			delete(cpCManXml)
+		end
 	end
 end
 

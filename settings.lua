@@ -68,13 +68,6 @@ end;
 
 function courseplay:toggleConvoyActive(self)
 	self.cp.convoyActive =  not self.cp.convoyActive
-	if self.cp.convoyActive and self.cp.convoy == nil then
-		self.cp.convoy ={
-						distance= 0,
-						number = 0,
-						members = 0
-						}
-	end	
 end
 
 function courseplay:toggleFuelSaveOption(self)
@@ -737,7 +730,7 @@ function courseplay:copyCourse(vehicle)
 		vehicle.cp.loadedCourses = src.cp.loadedCourses;
 		vehicle.cp.numCourses = src.cp.numCourses;
 		courseplay:setWaypointIndex(vehicle, 1);
-		vehicle:setCpVar('numWaypoints', #vehicle.Waypoints,courseplay.isClient);
+		vehicle.cp.numWayPoints = #vehicle.Waypoints;
 		vehicle.cp.numWaitPoints = src.cp.numWaitPoints;
 		vehicle.cp.numCrossingPoints = src.cp.numCrossingPoints;
 
@@ -1103,21 +1096,22 @@ end;
 
 --Course generation
 function courseplay:switchStartingCorner(vehicle)
-	vehicle:setCpVar('startingCorner',vehicle.cp.startingCorner + 1,courseplay.isClient);
+	local newStartingCorner = vehicle.cp.startingCorner +1 
 	local maxNumber = 5
 	if vehicle.cp.generationPosition.hasSavedPosition then
 		maxNumber = 6
 	end
-	if vehicle.cp.startingCorner > maxNumber then
-		vehicle:setCpVar('startingCorner',1,courseplay.isClient);
+	if newStartingCorner > maxNumber then
+		newStartingCorner = 1
 	end;
-	vehicle:setCpVar('hasStartingCorner',true,courseplay.isClient);
+	vehicle.cp.startingCorner = newStartingCorner
+	vehicle.cp.hasStartingCorner = true;
 	if vehicle.cp.startingCorner == 5 
 	or vehicle.cp.startingCorner == 6 then
 		-- starting direction is always auto when starting corner is vehicle location
-		vehicle:setCpVar('hasStartingDirection',true,courseplay.isClient);
-		vehicle:setCpVar('startingDirection',5,courseplay.isClient);
-			-- allow more headlands with the new course gen
+		vehicle.cp.hasStartingDirection = true;
+		vehicle.cp.startingDirection = 5;
+		-- allow more headlands with the new course gen
 		--vehicle.cp.headland.maxNumLanes = vehicle.cp.headland.autoDirMaxNumLanes
 		vehicle:setCpVar('headland.maxNumLanes',vehicle.cp.headland.autoDirMaxNumLanes,courseplay.isClient);
 		courseplay:changeStartingDirection( vehicle )
@@ -1625,10 +1619,10 @@ function courseplay:setEngineState(vehicle, on)
 	-- default
 	if vehicle.startMotor and vehicle.stopMotor then
 		if on then
-			vehicle:startMotor(true);
+			vehicle:startMotor();
 		else
 			vehicle.lastAcceleration = 0;
-			vehicle:stopMotor(true);
+			vehicle:stopMotor();
 		end;
 	end;
 end;

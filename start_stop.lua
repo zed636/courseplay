@@ -30,8 +30,8 @@ function courseplay:start(self)
 	if courseplay.isClient then
 		return
 	end
-
-	self:setCpVar('numWaypoints', #self.Waypoints,courseplay.isClient);
+	self.cp.numWayPoints = #self.Waypoints;
+	--self:setCpVar('numWaypoints', #self.Waypoints,courseplay.isClient);
 	if self.cp.numWaypoints < 1 then
 		return
 	end
