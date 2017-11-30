@@ -1217,11 +1217,7 @@ function courseplay:readStream(streamId, connection)
 		
 	for _,variable in ipairs(courseplay.multiplayerSyncTable)do
 		local value = courseplay.streamDebugRead(streamId, variable.dataFormat)
-<<<<<<< Updated upstream
-		if variable.dataFormat == 'String' and value == 'nil'
-=======
 		if variable.dataFormat == 'String' and value == 'nil' then
->>>>>>> Stashed changes
 			value = nil
 		end
 		courseplay:setVarValueFromString(self, variable.name, value)
