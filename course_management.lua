@@ -21,6 +21,8 @@ end;
 
 -- enables input for course/folder/filter name
 function courseplay:showSaveCourseForm(vehicle, saveWhat) -- fn is in courseplay because it's vehicle based
+	--print(string.format("courseplay:showSaveCourseForm(vehicle(%s), saveWhat(%s))",tostring(vehicle),tostring(saveWhat)))
+	--print(string.format("vehicle.cp.imWriting(%s)",tostring(vehicle.cp.imWriting)))
 	saveWhat = saveWhat or 'course'
 	
 	if saveWhat == 'course' then

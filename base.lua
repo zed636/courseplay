@@ -1217,7 +1217,11 @@ function courseplay:readStream(streamId, connection)
 		
 	for _,variable in ipairs(courseplay.multiplayerSyncTable)do
 		local value = courseplay.streamDebugRead(streamId, variable.dataFormat)
+<<<<<<< Updated upstream
 		if variable.dataFormat == 'String' and value == 'nil'
+=======
+		if variable.dataFormat == 'String' and value == 'nil' then
+>>>>>>> Stashed changes
 			value = nil
 		end
 		courseplay:setVarValueFromString(self, variable.name, value)
@@ -1258,7 +1262,53 @@ function courseplay:readStream(streamId, connection)
 		self.cp.loadedCourses = Utils.splitString(",", courses);
 		courseplay:reloadCourses(self, true)
 	end
+	
+	self.cp.numCourses = streamDebugReadInt32(streamId)
+	
+	print(string.format("%s:read: numCourses: %s loadedCourses: %s",tostring(self.name),tostring(self.cp.numCourses),tostring(#self.cp.loadedCourses)))
+	if self.cp.numCourses > #self.cp.loadedCourses then
+		self.Waypoints = {}
+		local wp_count = streamDebugReadInt32(streamId)
+		for w = 1, wp_count do
+			--courseplay:debug("got waypoint", 8);
+			print("reading "..tostring(w))
+			local cx = streamDebugReadFloat32(streamId)
+			local cz = streamDebugReadFloat32(streamId)
+			local angle = streamDebugReadFloat32(streamId)
+			local wait = streamDebugReadBool(streamId)
+			local rev = streamDebugReadBool(streamId)
+			local crossing = streamDebugReadBool(streamId)
+			local speed = streamDebugReadInt32(streamId)
 
+			local generated = streamDebugReadBool(streamId)
+			--local dir = streamDebugReadString(streamId)
+			local turnStart = streamDebugReadBool(streamId)
+			local turnEnd = streamDebugReadBool(streamId)
+			local ridgeMarker = streamDebugReadInt32(streamId)
+			
+			local wp = {
+				cx = cx, 
+				cz = cz, 
+				angle = angle, 
+				wait = wait, 
+				rev = rev, 
+				crossing = crossing, 
+				speed = speed,
+				generated = generated,
+				turnStart = turnStart,
+				turnEnd = turnEnd,
+				ridgeMarker = ridgeMarker 
+			};
+			table.insert(self.Waypoints, wp)
+		end
+		self.cp.numWaypoints = #self.Waypoints
+		
+		if self.cp.numCourses > 1 then
+			self.cp.currentCourseName = string.format("%d %s", self.cp.numCourses, courseplay:loc('COURSEPLAY_COMBINED_COURSES'));
+		end
+	end
+
+	
 	local debugChannelsString = streamDebugReadString(streamId)
 	for k,v in pairs(Utils.splitString(",", debugChannelsString)) do
 		courseplay:toggleDebugChannel(self, k, v == 'true');
@@ -1306,6 +1356,27 @@ function courseplay:writeStream(streamId, connection)
 		loadedCourses = table.concat(self.cp.loadedCourses, ",")
 	end
 	streamDebugWriteString(streamId, loadedCourses) -- 60.
+	streamDebugWriteInt32(streamId, self.cp.numCourses)
+	
+	print(string.format("%s:write: numCourses: %s loadedCourses: %s",tostring(self.name),tostring(self.cp.numCourses),tostring(#self.cp.loadedCourses)))
+	if self.cp.numCourses > #self.cp.loadedCourses then
+		courseplay:debug("id: "..tostring(networkGetObjectId(self)).."  sync temp course", 5)
+		streamDebugWriteInt32(streamId, #(self.Waypoints))
+		for w = 1, #(self.Waypoints) do
+			print("writing point "..tostring(w))
+			streamDebugWriteFloat32(streamId, self.Waypoints[w].cx)
+			streamDebugWriteFloat32(streamId, self.Waypoints[w].cz)
+			streamDebugWriteFloat32(streamId, self.Waypoints[w].angle)
+			streamDebugWriteBool(streamId, self.Waypoints[w].wait)
+			streamDebugWriteBool(streamId, self.Waypoints[w].rev)
+			streamDebugWriteBool(streamId, self.Waypoints[w].crossing)
+			streamDebugWriteInt32(streamId, self.Waypoints[w].speed)
+			streamDebugWriteBool(streamId, self.Waypoints[w].generated)
+			streamDebugWriteBool(streamId, self.Waypoints[w].turnStart)
+			streamDebugWriteBool(streamId, self.Waypoints[w].turnEnd)
+			streamDebugWriteInt32(streamId, self.Waypoints[w].ridgeMarker)
+		end	
+	end
 
 	local debugChannelsString = table.concat(table.map(courseplay.debugChannels, tostring), ",");
 	streamDebugWriteString(streamId, debugChannelsString) 
