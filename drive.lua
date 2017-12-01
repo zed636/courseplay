@@ -1214,7 +1214,12 @@ function courseplay:setSpeed(vehicle, refSpeed,forceTrueSpeed)
 		end;
 	end
 	
-	vehicle:setCruiseControlMaxSpeed(newSpeed) 
+	vehicle:setCruiseControlMaxSpeed(newSpeed)
+	if g_server ~= nil and vehicle.cruiseControl.speed ~= newSpeed then
+        g_server:broadcastEvent(SetCruiseControlSpeedEvent:new(vehicle, vehicle.cruiseControl.speed), nil, nil, vehicle);
+    end
+
+	
 
 	courseplay:handleSlipping(vehicle, refSpeed);
 
@@ -1705,9 +1710,13 @@ end
 
 -----------------------------------------------------------------------------------------
 
-function courseplay:setWaypointIndex(vehicle, number)
+function courseplay:setWaypointIndex(vehicle, number,isRecording)
 	if vehicle.cp.waypointIndex ~= number then
-		vehicle:setCpVar('waypointIndex',number,courseplay.isClient);
+		if isRecording then
+			vehicle.cp.waypointIndex = number  
+		else
+			vehicle:setCpVar('waypointIndex',number,courseplay.isClient);
+		end
 		if vehicle.cp.waypointIndex > 1 then
 			vehicle.cp.previousWaypointIndex = vehicle.cp.waypointIndex - 1;
 		else

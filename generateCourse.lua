@@ -613,7 +613,7 @@ function courseplay:generateCourse(vehicle)
 	---############################################################################
 	-- (4) CHECK PATH LANES FOR VALID START AND END POINTS and FILL fieldWorkCourse
 	-------------------------------------------------------------------------------
-	courseplay:debug('(4) CHECK PATH LANES FOR VALID START AND END POINTS and FILL fieldWorkCourse', 7);
+	courseplay:debug('(4) CHECK PATH LANES FOR VALID START AND END POINTS and FILL fieldWorkCourse #pathPoints:'..tostring(#pathPoints), 7);
 	local fieldWorkCourse = {};
 	local numPoints = #(pathPoints);
 
@@ -790,7 +790,7 @@ function courseplay:generateCourse(vehicle)
 	---############################################################################
 	-- (6) CONCATENATE HEADLAND COURSE and FIELDWORK COURSE
 	-------------------------------------------------------------------------------
-	courseplay:debug('(6) CONCATENATE HEADLAND COURSE and FIELDWORK COURSE', 7);
+	courseplay:debug('(6) CONCATENATE HEADLAND COURSE and FIELDWORK COURSE #fieldWorkCourse:'..tostring(#fieldWorkCourse), 7);
 	local lastFivePoints = {};
 	if vehicle.cp.returnToFirstPoint then
 		fieldWorkCourse[#fieldWorkCourse].wait = false;
@@ -852,8 +852,8 @@ function courseplay:generateCourse(vehicle)
 	-- (7) FINAL COURSE DATA
 	-------------------------------------------------------------------------------
 	courseplay:debug('(7) FINAL COURSE DATA', 7);
-	vehicle:setCpVar('numWaypoints', #vehicle.Waypoints,courseplay.isClient);
-
+	--vehicle:setCpVar('numWaypoints', #vehicle.Waypoints,courseplay.isClient);
+	vehicle.cp.numWaypoints = #vehicle.Waypoints;
 	if vehicle.cp.numWaypoints == 0 then
 		courseplay:debug('ERROR: #vehicle.Waypoints == 0 -> cancel and return', 7);
 		return;
