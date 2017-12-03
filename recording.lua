@@ -99,7 +99,6 @@ end
 
 -- starts course recording -- just setting variables
 function courseplay:start_record(vehicle)
-	print("courseplay:start_record called")
 	--    courseplay:clearCurrentLoadedCourse(vehicle)
 	courseplay:setIsRecording(vehicle, true);
 	courseplay:setRecordingIsPaused(vehicle, false);
@@ -118,7 +117,6 @@ end
 
 -- stops course recording -- just setting variables
 function courseplay:stop_record(vehicle)
-	print("courseplay:stop_record called")
 	courseplay:set_crossing(vehicle, true);
 	courseplay:setIsRecording(vehicle, false);
 	courseplay:setRecordingIsPaused(vehicle, false);

@@ -1424,7 +1424,8 @@ end;
 
 function courseplay:goToVehicle(curVehicle, targetVehicle)
 	-- print(string.format("%s: goToVehicle(): targetVehicle=%q", nameNum(curVehicle), nameNum(targetVehicle)));
-	g_client:getServerConnection():sendEvent(VehicleEnterRequestEvent:new(targetVehicle, g_settingsNickname));
+	g_client:getServerConnection():sendEvent(VehicleEnterRequestEvent:new(targetVehicle, g_currentMission.player.controllerName, g_currentMission.missionInfo.playerIndex, g_currentMission.missionInfo.playerColorIndex));
+	--g_client:getServerConnection():sendEvent(VehicleEnterRequestEvent:new(targetVehicle, g_settingsNickname));
 	g_currentMission.isPlayerFrozen = false;
 	CpManager.playerOnFootMouseEnabled = false;
 	InputBinding.setShowMouseCursor(targetVehicle.cp.mouseCursorActive);

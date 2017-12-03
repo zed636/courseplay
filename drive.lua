@@ -1215,12 +1215,7 @@ function courseplay:setSpeed(vehicle, refSpeed,forceTrueSpeed)
 	end
 	
 	vehicle:setCruiseControlMaxSpeed(newSpeed)
-	if g_server ~= nil and vehicle.cruiseControl.speed ~= newSpeed then
-        g_server:broadcastEvent(SetCruiseControlSpeedEvent:new(vehicle, vehicle.cruiseControl.speed), nil, nil, vehicle);
-    end
-
 	
-
 	courseplay:handleSlipping(vehicle, refSpeed);
 
 	local tolerance = 2.5;
