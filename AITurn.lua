@@ -527,7 +527,7 @@ function CourseTurn:generateCalculatedTurn()
 end
 
 function CourseTurn:generatePathfinderTurn()
-	self.pathFindingStartedAt = self.vehicle.timer
+	self.pathfindingStartedAt = self.vehicle.timer
 	local done, path
 	local turnEndNode, startOffset, goalOffset = self.turnContext:getTurnEndNodeAndOffsets()
 	local canTurnOnField, distanceToReverse = AITurn.canTurnOnField(self.turnContext, self.vehicle)
@@ -556,7 +556,7 @@ end
 
 function CourseTurn:onPathfindingDone(path)
 	if path and #path > 2 then
-		self:debug('Pathfinding finished with %d waypoints (%d ms)', #path, self.vehicle.timer - (self.pathFindingStartedAt or 0))
+		self:debug('Pathfinding finished with %d waypoints (%d ms)', #path, self.vehicle.timer - (self.pathfindingStartedAt or 0))
 		if self.reverseBeforeStartingTurnWaypoints and #self.reverseBeforeStartingTurnWaypoints > 0 then
 			self.turnCourse = Course(self.vehicle, self.reverseBeforeStartingTurnWaypoints, true)
 			self.turnCourse:appendWaypoints(courseGenerator.pointsToXzInPlace(path))
@@ -571,7 +571,7 @@ function CourseTurn:onPathfindingDone(path)
 		-- TODO: should probably better done on onWaypointChange, to reset to 0
 		self.turnCourse:setUseTightTurnOffsetForLastWaypoints(10)
 	else
-		self:debug('No path found in %d ms, falling back to normal turn course generator', self.vehicle.timer - (self.pathFindingStartedAt or 0))
+		self:debug('No path found in %d ms, falling back to normal turn course generator', self.vehicle.timer - (self.pathfindingStartedAt or 0))
 		self:generateCalculatedTurn()
 	end
 	self.driver:startFieldworkCourseWithTemporaryCourse(self.turnCourse, self.turnContext.turnEndWpIx)

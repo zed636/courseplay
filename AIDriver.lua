@@ -1289,7 +1289,7 @@ function AIDriver:driveToPointWithPathfinding(tx, tz, course, ix)
 			if not self.pathfinder:isActive() then
 				self:debug('Start pathfinding on field %d from vehicle at %d/%d (%s) and target at %d/%d (%s)',
 					fieldNum, vx, vz, tostring(courseplay:isField(vx, vz)), tx, tz, tostring(courseplay:isField(tx, tz)))
-				self.pathFindingStartedAt = self.vehicle.timer
+				self.pathfindingStartedAt = self.vehicle.timer
 				self.courseAfterPathfinding = course
 				self.waypointIxAfterPathfinding = ix
 				-- TODO: move this coordinate transformation into the pathfinder, it is internal
@@ -1336,7 +1336,7 @@ end
 ---@return boolean true if a temporary course (path/align) is started, false otherwise
 function AIDriver:onPathfindingDone(path)
 	if path and #path > 2 then
-		self:debug('Pathfinding finished with %d waypoints (%d ms)', #path, self.vehicle.timer - (self.pathFindingStartedAt or 0))
+		self:debug('Pathfinding finished with %d waypoints (%d ms)', #path, self.vehicle.timer - (self.pathfindingStartedAt or 0))
 		local temporaryCourse = Course(self.vehicle, courseGenerator.pointsToXz(path), true)
 		-- alignment (and thus shortening) only needed if we have a course to continue on after the pathfinding
 		if self.courseAfterPathfinding then
