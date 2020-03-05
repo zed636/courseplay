@@ -529,9 +529,10 @@ function HybridAStar:findPath(start, goal, turnRadius, userData, allowReverse, g
 
 		if not pred:isClosed() then
 			-- analytical expansion: try a Dubins/Reeds-Shepp path from here randomly, more often as we getting closer to the goal
+			-- also, try it before we start with the pathfinding
 			if pred.h then
-				if self.analyticSolverEnabled and not self.goalNodeIsInvalid
-						and math.random() > 2 * pred.h / self.distanceToGoal then --and pred.h < 4 * turnRadius then
+				if self.analyticSolverEnabled and not self.goalNodeIsInvalid and
+						(self.iterations == 1 or math.random() > 2 * pred.h / self.distanceToGoal) then
 					---@type AnalyticSolution
 					local analyticSolution, pathType = self.analyticSolver:solve(pred, goal, turnRadius, allowReverse)
 					self:debug('Check analytical solution at iteration %d, %.1f, %.1f', self.iterations, pred.h, pred.h / self.distanceToGoal)
@@ -561,7 +562,7 @@ function HybridAStar:findPath(start, goal, turnRadius, userData, allowReverse, g
 					-- we end up being in overlap with another vehicle when we start the pathfinding and all we need is
 					-- an iteration or two to bring us out of that position
 					if self.iterations < 3 or self.isValidNodeFunc(succ, userData) then
-						succ:updateG(primitive, getNodePenaltyFunc(succ))
+						succ:updateG(primitive, getNodePenaltyFunc(succ, userData))
 						local analyticSolutionCost = 0
 						if self.analyticSolverEnabled then
 							local analyticSolution = self.analyticSolver:solve(succ, goal, turnRadius, allowReverse)
@@ -815,7 +816,7 @@ function HybridAStarWithAStarInTheMiddle:resume(...)
 				HybridAStar.smooth(self.path)
 			end
 			for i, p in ipairs(self.path) do
-				print(tostring(p))
+				print(i, tostring(p))
 			end
 			return true, self.path
 		end

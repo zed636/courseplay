@@ -740,9 +740,14 @@ end
 
 ---@param course Course
 function AIDriver:setUpAlignmentCourse(course, ix)
-	local x, _, z = course:getWaypointPosition(ix)
-	local vx, _, vz = getWorldTranslation(self:getDirectionNode())
-	local alignmentWaypoints = courseplay:getAlignWpsToTargetWaypoint(self.vehicle, vx, vz, x, z, math.rad( course:getWaypointAngleDeg(ix)), true)
+	local x, z, yRot = PathfinderUtil.getNodePositionAndDirection(AIDriverUtil.getDirectionNode(self.vehicle), 0, 0)
+	local start = State3D(x, -z, courseGenerator.fromCpAngle(yRot))
+	x, _, z = course:getWaypointPosition(ix)
+	local goal = State3D(x, -z, courseGenerator.fromCpAngle(math.rad(course:getWaypointAngleDeg(ix))))
+	local turnRadius = AIDriverUtil.getTurningRadius(self.vehicle)
+	-- TODO: use Reeds-Shepp if we can reverse
+	local solution = PathfinderUtil.dubinsSolver:solve(start, goal, turnRadius)
+	local alignmentWaypoints = solution:getWaypoints(start, turnRadius)
 	if not alignmentWaypoints then
 		self:debug("Can't find an alignment course, may be too close to target wp?" )
 		return nil
@@ -752,7 +757,7 @@ function AIDriver:setUpAlignmentCourse(course, ix)
 		return nil
 	end
 	self:debug('Alignment course with %d waypoints started.', #alignmentWaypoints)
-	return Course(self.vehicle, alignmentWaypoints, true)
+	return Course(self.vehicle, courseGenerator.pointsToXzInPlace(alignmentWaypoints), true)
 end
 
 function AIDriver:debug(...)

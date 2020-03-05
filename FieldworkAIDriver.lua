@@ -264,12 +264,10 @@ function FieldworkAIDriver:startCourseWithPathfinding(course, ix)
 	self.ppc:initialize(ix)
 	self.courseAfterPathfinding = course
 	self.waypointIxAfterPathfinding = ix
-	local tx, _, tz = course:getWaypointPosition(ix)
-	local fieldNum = courseplay.fields:getFieldNumForPosition(tx, tz)
 	local done, path
 	self.pathfindingStartedAt = self.vehicle.timer
 	self.pathfinder, done, path = PathfinderUtil.startPathfindingFromVehicleToWaypoint(self.vehicle,
-			course:getWaypoint(ix), false, 0)
+			course:getWaypoint(ix), -self.frontMarkerDistance * 0,false, 0)
 	if done then
 		return self:onPathfindingDone(path)
 	else
