@@ -257,26 +257,12 @@ end
 ---@param ix number
 ---@return boolean true when a pathfinding successfully started or an alignment course was added
 function FieldworkAIDriver:startCourseWithPathfinding(course, ix)
-	-- make sure we have at least a direct course until we figure out a better path. This can happen
-	-- when we don't have a course set yet when starting the pathfinding, for example when starting the course.`
-	self.course = course
-	self.ppc:setCourse(course)
-	self.ppc:initialize(ix)
-	self.courseAfterPathfinding = course
-	self.waypointIxAfterPathfinding = ix
-	local done, path
-	self.pathfindingStartedAt = self.vehicle.timer
-	self.pathfinder, done, path = PathfinderUtil.startPathfindingFromVehicleToWaypoint(self.vehicle,
-			course:getWaypoint(ix), -self.frontMarkerDistance * 0,false, 0)
-	if done then
-		return self:onPathfindingDone(path)
-	else
-		self:setPathfindingDoneCallback(self, self.onPathfindingDone)
-		return true
-	end
+	-- if the implement is in the front, generate a path so the implement will be at the goal
+	local zOffset = self.frontMarkerDistance > 0 and - self.frontMarkerDistance or 0
+	return AIDriver.startCourseWithPathfinding(self, course, ix, zOffset,0)
 end
 
-function FieldworkAIDriver:onPathfindingDone(path)
+function FieldworkAIDriver:xonPathfindingDone(path)
 	if path and #path > 2 then
 		self:debug('(FieldworkAIDriver) Pathfinding finished with %d waypoints (%d ms)', #path, self.vehicle.timer - (self.pathfindingStartedAt or 0))
 		local tempCourse = Course(self.vehicle, courseGenerator.pointsToXzInPlace(path), true)
@@ -522,8 +508,7 @@ function FieldworkAIDriver:onEndCourse()
 		self:debug('Fieldwork AI driver in mode %d ending fieldwork course', self:getMode())
 		if self:shouldReturnToFirstPoint() then
 			self:debug('Returning to first point')
-			local x, _, z = self.fieldworkCourse:getWaypointPosition(1)
-			if self:driveToPointWithPathfinding(x, z) then
+			if self:driveToPointWithPathfinding(self.fieldworkCourse:getWaypoint(1)) then
 				-- pathfinding was successful, drive back to first point
 				self.state = self.states.RETURNING_TO_FIRST_POINT
 				self:raiseImplements()

@@ -208,7 +208,7 @@ function DevHelper:showFillNodes()
             local fillUnits = vehicle:getFillUnits()
             for i = 1, #fillUnits do
                 local fillRootNode = vehicle:getFillUnitExactFillRootNode(i)
-                DebugUtil.drawDebugNode(fillRootNode, 'Fill node ' .. tostring(i))
+                if fillRootNode then DebugUtil.drawDebugNode(fillRootNode, 'Fill node ' .. tostring(i)) end
             end
         end
     end

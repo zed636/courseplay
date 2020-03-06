@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 PathfinderUtil = {}
 
 PathfinderUtil.dubinsSolver = DubinsSolver()
+PathfinderUtil.reedSheppSolver = ReedsSheppSolver()
 
 ---Size/turn radius all other information on the vehicle
 ---@class PathfinderUtil.VehicleData
