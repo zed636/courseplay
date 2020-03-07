@@ -218,7 +218,7 @@ end
 
 
 function PathfinderUtil.hasFruit(x, z, length, width)
-    local fruitsToIgnore = {13, 14} -- GRASS, DRYGRASS
+    local fruitsToIgnore = {9, 10, 13, 14} -- POTATO, SUGARBEET, GRASS, DRYGRASS, we can drive through these...
     for _, fruitType in ipairs(g_fruitTypeManager.fruitTypes) do
         local ignoreThis = false
         for _, fruitToIgnore in ipairs(fruitsToIgnore) do
