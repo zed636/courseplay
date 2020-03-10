@@ -1521,3 +1521,7 @@ end
 function AIDriver:shouldPayWages()
 	return true
 end
+
+function AIDriver:getAllowReversePathfinding()
+	return self.allowReversePathfinding and self.vehicle.cp.settings.allowReverseForPathfindingInTurns:is(true)
+end

@@ -70,7 +70,7 @@ function DevHelper:update()
     self.data.fieldNum = courseplay.fields:getFieldNumForPosition(self.data.x, self.data.z)
 
     self.data.hasFruit, self.data.fruitValue, self.data.fruit = PathfinderUtil.hasFruit(self.data.x, self.data.z, 2, 2)
-    self.data.isField, self.fieldArea, self.totalFieldArea = courseplay:isField(self.data.x, self.data.z, 2, 2)
+    self.data.isField, self.fieldArea, self.totalFieldArea = courseplay:isField(self.data.x, self.data.z, 10, 10)
     self.data.fieldAreaPercent = 100 * self.fieldArea / self.totalFieldArea
 
     self.data.collidingShapes = ''
@@ -104,10 +104,12 @@ end
 function DevHelper:keyEvent(unicode, sym, modifier, isDown)
     if not CpManager.isDeveloper then return end
     if bitAND(modifier, Input.MOD_LALT) ~= 0 and isDown and sym == Input.KEY_comma then
+        -- Left Alt + < mark start
         self.context = PathfinderUtil.Context(self.vehicleData, PathfinderUtil.FieldData(self.data.fieldNum))
         self.start = State3D(self.data.x, -self.data.z, courseGenerator.fromCpAngleDeg(self.data.yRotDeg))
         self:debug('Start %s', tostring(self.start))
     elseif bitAND(modifier, Input.MOD_LALT) ~= 0 and isDown and sym == Input.KEY_period then
+        -- Left Alt + > mark goal
         self.goal = State3D(self.data.x, -self.data.z, courseGenerator.fromCpAngleDeg(self.data.yRotDeg))
 
         local x, y, z = getWorldTranslation(self.node)
@@ -122,6 +124,7 @@ function DevHelper:keyEvent(unicode, sym, modifier, isDown)
         self:debug('Goal %s', tostring(self.goal))
         --self:startPathfinding()
     elseif bitAND(modifier, Input.MOD_LCTRL) ~= 0 and isDown and sym == Input.KEY_period then
+        -- Left Ctrl + > find path
         self:debug('Calculate')
         self:startPathfinding()
     end
@@ -135,7 +138,7 @@ function DevHelper:startPathfinding()
     if self.vehicle and self.vehicle.cp.driver and self.vehicle.cp.driver.fieldworkCourse then
         self:debug('Starting pathfinding for turn between %s and %s', tostring(self.start), tostring(self.goal))
         self.pathfinder, done, path = PathfinderUtil.findPathForTurn(self.vehicle, 0, self.goalNode, 0,
-                1.05 * self.vehicle.cp.turnDiameter / 2, false, self.vehicle.cp.driver.fieldworkCourse)
+                1.05 * self.vehicle.cp.turnDiameter / 2, true, self.vehicle.cp.driver.fieldworkCourse)
     else
         self:debug('Starting pathfinding (allow reverse) between %s and %s', tostring(self.start), tostring(self.goal))
         local start = State3D:copy(self.start)

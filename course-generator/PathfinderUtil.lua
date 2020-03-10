@@ -137,8 +137,15 @@ end
 ---@class PathfinderUtil.Parameters
 PathfinderUtil.Parameters = CpObject()
 ---@param maxFruitPercent number maximum percentage of fruit present before a node is marked as invalid
-function PathfinderUtil.Parameters:init(maxFruitPercent)
+---@param offFieldPenalty number penalty to add for every off-field node The higher, the more likely the vehicle will
+---stay on field
+---@param preferHeadland boolean prefer a path on the headland
+---@param headlandWidth number width of the headland, the area near the field boundary to prefer
+function PathfinderUtil.Parameters:init(maxFruitPercent, offFieldPenalty, preferHeadland, headlandWidth)
     self.maxFruitPercent = maxFruitPercent or 50
+    self.offFieldPenalty = offFieldPenalty or 1
+    self.preferHeadland = preferHeadland or false
+    self.headlandWidth = headlandWidth or 0
 end
 
 --- Pathfinder context
@@ -297,6 +304,39 @@ function PathfinderUtil.doRectanglesOverlap(a, b)
     return true
 end
 
+--[[
+Pathfinding is controlled by the validity and penalty functions below. The pathfinder will call these functions
+for each node to determine their validity and penalty.
+
+A node (also called a pose) has a position and a heading, as we don't just want to get to position x, z but
+we also need to arrive in a given direction.
+
+Validity
+
+A node is always invalid if it collides with an obstacle (tree, pole, other vehicle). Such nodes are ignored by
+the pathfinder. You can mark other nodes invalid too, for example nodes not on the field if we need to keep the
+vehicle on the field, but that's usually better handled with a penalty.
+
+The pathfinder can use two separate functions to determine a node's validity, one for the hybrid A* nodes and
+a different one for the analytic solutions (Dubins or Reeds-Shepp)
+
+Penalty
+
+Valid nodes can also be prioritized by a penalty, like when in the fruit or off the field. The penalty increases
+the cost of a path and the pathfinder will likely avoid nodes with a higher penalty. With this we can keep the path
+out of the fruit or on the field.
+
+Context
+
+Both the validity and penalty functions use a context to fine tune their behavior. The context can be set up before
+starting the pathfinding according to the caller's preferences.
+
+The context consists of the vehicle data describing the vehicle we are searching a path for, the data of the field
+we are working on and a number of parameters. These can be set up for different scenarios, for example turns on the
+field or driving to/from the field edge on an unload/refill course.
+
+]]--
+
 --- Calculate penalty for this node. The penalty will be added to the cost of the node. This allows for
 --- obstacle avoidance or forcing the search to remain in certain areas.
 ---@param node State3D
@@ -309,7 +349,7 @@ function PathfinderUtil.getNodePenalty(node, context)
     local penalty = 0
     local isField, area, totalArea = courseplay:isField(node.x, -node.y, areaSize, areaSize)
     if area / totalArea < minRequiredAreaRatio then
-        penalty = penalty + 1
+        penalty = penalty + context.parameters.offFieldPenalty
     end
     if isField then
         local hasFruit, fruitValue = PathfinderUtil.hasFruit(node.x, -node.y, areaSize, areaSize)
@@ -327,6 +367,11 @@ end
 function PathfinderUtil.isValidAnalyticSolutionNode(node, context)
     local hasFruit, fruitValue = PathfinderUtil.hasFruit(node.x, -node.y, 3, 3)
     if hasFruit and fruitValue > context.parameters.maxFruitPercent then return false end
+    if context.parameters.preferHeadland then
+        local isField, area, totalArea = courseplay:isField(node.x, -node.y,
+                context.parameters.headlandWidth, context.parameters.headlandWidth)
+        if not isField or (area / totalArea) > 0.999 then return false end
+    end
     return PathfinderUtil.isValidNode(node, context)
 end
 
@@ -337,6 +382,13 @@ function PathfinderUtil.isValidNode(node, context)
     if node.x < context.fieldData.minX or node.x > context.fieldData.maxX or node.y < context.fieldData.minY or node.y > context.fieldData.maxY then
         return false
     end
+
+    if context.parameters.preferHeadland then
+        local isField, area, totalArea = courseplay:isField(node.x, -node.y,
+                context.parameters.headlandWidth, context.parameters.headlandWidth)
+        if not isField or (area / totalArea) > 0.999 then return false end
+    end
+
     if not PathfinderUtil.helperNode then
         PathfinderUtil.helperNode = courseplay.createNode('pathfinderHelper', node.x, -node.y, 0)
     end
@@ -350,9 +402,6 @@ function PathfinderUtil.isValidNode(node, context)
     -- for debug purposes only, store validity info on node
     node.collidingShapes = PathfinderUtil.findCollidingShapes(myCollisionData, yRot, context.vehicleData)
     node.isColliding, node.vehicle = PathfinderUtil.findCollidingVehicles(myCollisionData, PathfinderUtil.helperNode, context.vehicleData)
-    --print(tostring(node))
-    --print(node.isColliding)
-    --print(node.collidingShapes)
     return (not node.isColliding and node.collidingShapes == 0)
 end
 
@@ -376,10 +425,27 @@ function PathfinderUtil.getAllHeadlands(course)
     for i = 1, course:getNumberOfWaypoints() do
         if course:isOnHeadland(i) then
             local x, y, z = course:getWaypointPosition(i)
-            headlands:add({x = x, y = -z})
+            local lane = course:getHeadlandNumber(i)
+            headlands:add({x = x, y = -z, lane = lane})
         end
     end
     return headlands
+end
+
+---@param start State3D
+---@param goal State3D
+---@param course Course
+---@param turnRadius number
+---@return State3D[]
+function PathfinderUtil.findShortestPathOnHeadland(start, goal, course, turnRadius)
+    -- to be able to use the existing getSectionBetweenPoints, we first create a Polyline[], then construct a State3D[]
+    local headland = PathfinderUtil.getOutermostHeadland(course)
+    headland:calculateData()
+    local path = {}
+    for _, p in ipairs(headland:getSectionBetweenPoints(start, goal)) do
+        table.insert(path, State3D(p.x, p.y, 0))
+    end
+    return path
 end
 
 --- Interface function to start the pathfinder
@@ -409,12 +475,21 @@ function PathfinderUtil.findPathForTurn(vehicle, startOffset, goalReferenceNode,
     local start = State3D(x, -z, courseGenerator.fromCpAngle(yRot))
     x, z, yRot = PathfinderUtil.getNodePositionAndDirection(goalReferenceNode, 0, goalOffset or 0)
     local goal = State3D(x, -z, courseGenerator.fromCpAngle(yRot))
-    -- use 3 * turn radius around start and goal in the hope that it is enough space to find a direct path
-    local pathfinder = HybridAStar(200, 10000)
+
+    local pathfinder
+    if course:getNumberOfHeadlands() > 0 then
+        -- if there's a headland, we want to drive on the headland to the next row
+        local headlandPath = PathfinderUtil.findShortestPathOnHeadland(start, goal, course, turnRadius)
+        pathfinder = HybridAStarWithPathInTheMiddle(turnRadius * 3, 200, headlandPath)
+    else
+        pathfinder = HybridAStarWithAStarInTheMiddle(turnRadius * 3, 200, 10000)
+    end
+
     local fieldNum = courseplay.fields:onWhichFieldAmI(vehicle)
     PathfinderUtil.setUpVehicleCollisionData(vehicle)
-    local context = PathfinderUtil.Context(PathfinderUtil.VehicleData(vehicle, true, 0.2), PathfinderUtil.FieldData(fieldNum), PathfinderUtil.Parameters())
-    local done, path = pathfinder:start(start, goal, turnRadius, context, allowReverse, PathfinderUtil.getNodePenalty, PathfinderUtil.isValidNode)
+    local parameters = PathfinderUtil.Parameters(nil, vehicle.cp.turnOnField and 10 or nil, false)
+    local context = PathfinderUtil.Context(PathfinderUtil.VehicleData(vehicle, true, 0.2), PathfinderUtil.FieldData(fieldNum), parameters)
+    local done, path = pathfinder:start(start, goal, turnRadius, context, allowReverse, PathfinderUtil.getNodePenalty, PathfinderUtil.isValidNode, PathfinderUtil.isValidAnalyticSolutionNode)
     return pathfinder, done, path
 end
 
